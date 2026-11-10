@@ -1,6 +1,8 @@
 import 'dart:math';
+
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../constants/app_constants.dart';
 
 class MockNetworkInterceptor extends Interceptor {
@@ -10,8 +12,13 @@ class MockNetworkInterceptor extends Interceptor {
   MockNetworkInterceptor([this._prefs]);
 
   @override
-  Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    final latency = _prefs?.getInt(AppConstants.prefSimulatedLatencyMs) ?? (400 + _random.nextInt(450));
+  Future<void> onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    final latency =
+        _prefs?.getInt(AppConstants.prefSimulatedLatencyMs) ??
+        (400 + _random.nextInt(450));
     final force503 = _prefs?.getBool(AppConstants.prefForce503Error) ?? false;
 
     await Future<void>.delayed(Duration(milliseconds: latency));
@@ -23,7 +30,8 @@ class MockNetworkInterceptor extends Interceptor {
           response: Response(
             requestOptions: options,
             statusCode: 503,
-            statusMessage: 'Service Unavailable (Simulated Recruiter Debug Mode)',
+            statusMessage:
+                'Service Unavailable (Simulated Recruiter Debug Mode)',
             data: {'error': 'Service temporarily unavailable. Please retry.'},
           ),
           type: DioExceptionType.badResponse,
@@ -37,7 +45,10 @@ class MockNetworkInterceptor extends Interceptor {
         Response(
           requestOptions: options,
           statusCode: 200,
-          data: {'status': 'success', 'timestamp': DateTime.now().toIso8601String()},
+          data: {
+            'status': 'success',
+            'timestamp': DateTime.now().toIso8601String(),
+          },
         ),
       );
       return;

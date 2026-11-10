@@ -65,18 +65,18 @@ class FieldAgent extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        department,
-        role,
-        currentLat,
-        currentLng,
-        speedKmh,
-        batteryLevelPercent,
-        isOnline,
-        currentEtaMins,
-        destinationName,
-        activeTaskId,
-        routeCoordinates,
-      ];
+    id,
+    name,
+    department,
+    role,
+    currentLat,
+    currentLng,
+    speedKmh,
+    batteryLevelPercent,
+    isOnline,
+    currentEtaMins,
+    destinationName,
+    activeTaskId,
+    routeCoordinates,
+  ];
 }

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 import '../../../domain/entities/field_agent.dart';
 
 abstract class DispatchEvent extends Equatable {
@@ -54,16 +55,16 @@ class AssignNewTaskEvent extends DispatchEvent {
 
   @override
   List<Object?> get props => [
-        agentId,
-        agentName,
-        title,
-        clientName,
-        locationAddress,
-        latitude,
-        longitude,
-        priority,
-        slaDeadline,
-      ];
+    agentId,
+    agentName,
+    title,
+    clientName,
+    locationAddress,
+    latitude,
+    longitude,
+    priority,
+    slaDeadline,
+  ];
 }
 
 class UpdateTaskStatusEvent extends DispatchEvent {

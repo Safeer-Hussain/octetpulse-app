@@ -7,7 +7,8 @@ class AttendanceRecord extends Equatable {
   final DateTime checkInTime;
   final DateTime? checkOutTime;
   final int durationSeconds;
-  final String status; // 'Clocked In', 'On Break', 'Field Transit', 'Clocked Out'
+  final String
+  status; // 'Clocked In', 'On Break', 'Field Transit', 'Clocked Out'
   final bool isWithinGeofence;
   final double latitude;
   final double longitude;
@@ -51,22 +52,23 @@ class AttendanceRecord extends Equatable {
       isWithinGeofence: isWithinGeofence ?? this.isWithinGeofence,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
-      geofenceDistanceMeters: geofenceDistanceMeters ?? this.geofenceDistanceMeters,
+      geofenceDistanceMeters:
+          geofenceDistanceMeters ?? this.geofenceDistanceMeters,
     );
   }
 
   @override
   List<Object?> get props => [
-        id,
-        employeeId,
-        employeeName,
-        checkInTime,
-        checkOutTime,
-        durationSeconds,
-        status,
-        isWithinGeofence,
-        latitude,
-        longitude,
-        geofenceDistanceMeters,
-      ];
+    id,
+    employeeId,
+    employeeName,
+    checkInTime,
+    checkOutTime,
+    durationSeconds,
+    status,
+    isWithinGeofence,
+    latitude,
+    longitude,
+    geofenceDistanceMeters,
+  ];
 }

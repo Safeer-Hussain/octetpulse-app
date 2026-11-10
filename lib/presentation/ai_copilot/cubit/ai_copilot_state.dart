@@ -55,7 +55,9 @@ class AiCopilotState extends Equatable {
     return AiCopilotState(
       messages: messages ?? this.messages,
       isStreaming: isStreaming ?? this.isStreaming,
-      streamingStatusText: clearStatusText ? null : (streamingStatusText ?? this.streamingStatusText),
+      streamingStatusText: clearStatusText
+          ? null
+          : (streamingStatusText ?? this.streamingStatusText),
     );
   }
 

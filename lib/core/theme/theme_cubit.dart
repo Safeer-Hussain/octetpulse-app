@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../constants/app_constants.dart';
 
 class ThemeCubit extends Cubit<ThemeMode> {
@@ -17,12 +18,18 @@ class ThemeCubit extends Cubit<ThemeMode> {
 
   void toggleTheme() {
     final next = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-    _prefs?.setString(AppConstants.prefThemeMode, next == ThemeMode.light ? 'light' : 'dark');
+    _prefs?.setString(
+      AppConstants.prefThemeMode,
+      next == ThemeMode.light ? 'light' : 'dark',
+    );
     emit(next);
   }
 
   void setTheme(ThemeMode mode) {
-    _prefs?.setString(AppConstants.prefThemeMode, mode == ThemeMode.light ? 'light' : 'dark');
+    _prefs?.setString(
+      AppConstants.prefThemeMode,
+      mode == ThemeMode.light ? 'light' : 'dark',
+    );
     emit(mode);
   }
 }

@@ -61,17 +61,17 @@ class DispatchTask extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        agentId,
-        agentName,
-        title,
-        clientName,
-        locationAddress,
-        latitude,
-        longitude,
-        priority,
-        status,
-        assignedAt,
-        slaDeadline,
-      ];
+    id,
+    agentId,
+    agentName,
+    title,
+    clientName,
+    locationAddress,
+    latitude,
+    longitude,
+    priority,
+    status,
+    assignedAt,
+    slaDeadline,
+  ];
 }

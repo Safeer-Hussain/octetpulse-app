@@ -11,7 +11,8 @@ class AppConstants {
 
   // VoIP Channel Identifiers
   static const String voipControlChannel = 'com.safeer.octetpulse/voip_control';
-  static const String voipTelemetryChannel = 'com.safeer.octetpulse/voip_telemetry';
+  static const String voipTelemetryChannel =
+      'com.safeer.octetpulse/voip_telemetry';
 
   // Currency Exchange Rate (Mock USD to PKR)
   static const double usdToPkrRate = 278.50;

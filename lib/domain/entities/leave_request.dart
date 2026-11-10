@@ -49,14 +49,14 @@ class LeaveRequest extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        employeeId,
-        employeeName,
-        requestType,
-        hours,
-        reason,
-        submittedAt,
-        status,
-        approverComment,
-      ];
+    id,
+    employeeId,
+    employeeName,
+    requestType,
+    hours,
+    reason,
+    submittedAt,
+    status,
+    approverComment,
+  ];
 }

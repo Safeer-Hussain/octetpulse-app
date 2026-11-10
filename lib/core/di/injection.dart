@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../data/datasources/local/app_database.dart';
 import '../../data/datasources/native/voip_native_bridge.dart';
 import '../../data/repositories/attendance_repository_impl.dart';
@@ -60,7 +61,11 @@ Future<void> initDependencies({SharedPreferences? prefs}) async {
 
   if (!getIt.isRegistered<ThemeCubit>()) {
     getIt.registerFactory<ThemeCubit>(
-      () => ThemeCubit(getIt.isRegistered<SharedPreferences>() ? getIt<SharedPreferences>() : null),
+      () => ThemeCubit(
+        getIt.isRegistered<SharedPreferences>()
+            ? getIt<SharedPreferences>()
+            : null,
+      ),
     );
   }
 
@@ -83,9 +88,7 @@ Future<void> initDependencies({SharedPreferences? prefs}) async {
   }
 
   if (!getIt.isRegistered<VoipBloc>()) {
-    getIt.registerFactory<VoipBloc>(
-      () => VoipBloc(getIt<VoipRepository>()),
-    );
+    getIt.registerFactory<VoipBloc>(() => VoipBloc(getIt<VoipRepository>()));
   }
 
   if (!getIt.isRegistered<AiCopilotCubit>()) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_constants.dart';
 import '../../core/di/injection.dart';
 import '../../data/datasources/local/app_database.dart';
@@ -11,11 +12,13 @@ class SplashView extends StatefulWidget {
   State<SplashView> createState() => _SplashViewState();
 }
 
-class _SplashViewState extends State<SplashView> with SingleTickerProviderStateMixin {
+class _SplashViewState extends State<SplashView>
+    with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
-  String _statusMessage = 'Initializing BLoC state engine & SQLite workforce ledger...';
+  String _statusMessage =
+      'Initializing BLoC state engine & SQLite workforce ledger...';
 
   @override
   void initState() {
@@ -61,8 +64,8 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (_, animation, __) => const AdaptiveScaffold(),
-          transitionsBuilder: (_, animation, __, child) {
+          pageBuilder: (_, animation, _) => const AdaptiveScaffold(),
+          transitionsBuilder: (_, animation, _, child) {
             return FadeTransition(opacity: animation, child: child);
           },
           transitionDuration: const Duration(milliseconds: 450),
@@ -105,7 +108,10 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
                       decoration: BoxDecoration(
                         color: colorScheme.surfaceContainerHighest,
                         shape: BoxShape.circle,
-                        border: Border.all(color: colorScheme.primary, width: 3),
+                        border: Border.all(
+                          color: colorScheme.primary,
+                          width: 3,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: colorScheme.primary.withValues(alpha: 0.25),
@@ -118,7 +124,7 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
                         child: Image.asset(
                           'assets/icons/app_icon.png',
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Icon(
+                          errorBuilder: (_, _, _) => Icon(
                             Icons.shield_outlined,
                             size: 64,
                             color: colorScheme.primary,
@@ -154,7 +160,9 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
               width: 180,
               child: LinearProgressIndicator(
                 backgroundColor: colorScheme.surfaceContainerHighest,
-                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.secondary),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  colorScheme.secondary,
+                ),
                 borderRadius: BorderRadius.circular(4),
                 minHeight: 3,
               ),

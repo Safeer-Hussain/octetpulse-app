@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 import '../../../domain/entities/voip_telemetry.dart';
 
 abstract class VoipEvent extends Equatable {

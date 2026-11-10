@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:flutter/services.dart';
+
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/voip_telemetry.dart';
 
@@ -10,19 +12,26 @@ class VoipNativeBridge {
   VoipNativeBridge({
     MethodChannel? controlChannel,
     EventChannel? telemetryChannel,
-  })  : _controlChannel = controlChannel ?? const MethodChannel(AppConstants.voipControlChannel),
-        _telemetryChannel = telemetryChannel ?? const EventChannel(AppConstants.voipTelemetryChannel);
+  }) : _controlChannel =
+           controlChannel ??
+           const MethodChannel(AppConstants.voipControlChannel),
+       _telemetryChannel =
+           telemetryChannel ??
+           const EventChannel(AppConstants.voipTelemetryChannel);
 
   Stream<VoipTelemetry> get telemetryStream {
     try {
-      return _telemetryChannel.receiveBroadcastStream().map((event) {
-        if (event is Map) {
-          return VoipTelemetry.fromMap(event);
-        }
-        return const VoipTelemetry();
-      }).handleError((error) {
-        return const VoipTelemetry();
-      });
+      return _telemetryChannel
+          .receiveBroadcastStream()
+          .map((event) {
+            if (event is Map) {
+              return VoipTelemetry.fromMap(event);
+            }
+            return const VoipTelemetry();
+          })
+          .handleError((error) {
+            return const VoipTelemetry();
+          });
     } catch (_) {
       return const Stream<VoipTelemetry>.empty();
     }
@@ -34,11 +43,10 @@ class VoipNativeBridge {
     String codec = 'OPUS-HD',
   }) async {
     try {
-      final result = await _controlChannel.invokeMethod<Map<dynamic, dynamic>>('initiateCall', {
-        'calleeId': calleeId,
-        'calleeName': calleeName,
-        'codec': codec,
-      });
+      final result = await _controlChannel.invokeMethod<Map<dynamic, dynamic>>(
+        'initiateCall',
+        {'calleeId': calleeId, 'calleeName': calleeName, 'codec': codec},
+      );
       return Map<String, dynamic>.from(result ?? {});
     } catch (_) {
       return {
@@ -55,7 +63,9 @@ class VoipNativeBridge {
 
   Future<Map<String, dynamic>> endCall() async {
     try {
-      final result = await _controlChannel.invokeMethod<Map<dynamic, dynamic>>('endCall');
+      final result = await _controlChannel.invokeMethod<Map<dynamic, dynamic>>(
+        'endCall',
+      );
       return Map<String, dynamic>.from(result ?? {});
     } catch (_) {
       return {
@@ -68,9 +78,14 @@ class VoipNativeBridge {
 
   Future<bool> toggleMute({bool? forceState}) async {
     try {
-      final result = await _controlChannel.invokeMethod<Map<dynamic, dynamic>>('toggleMute', {
-        if (forceState != null) 'isMuted': forceState,
-      });
+      final args = <String, Object?>{};
+      if (forceState != null) {
+        args['isMuted'] = forceState;
+      }
+      final result = await _controlChannel.invokeMethod<Map<dynamic, dynamic>>(
+        'toggleMute',
+        args,
+      );
       return result?['isMuted'] as bool? ?? false;
     } catch (_) {
       return forceState ?? false;
@@ -79,9 +94,14 @@ class VoipNativeBridge {
 
   Future<bool> toggleSpeaker({bool? forceState}) async {
     try {
-      final result = await _controlChannel.invokeMethod<Map<dynamic, dynamic>>('toggleSpeaker', {
-        if (forceState != null) 'isSpeakerOn': forceState,
-      });
+      final args = <String, Object?>{};
+      if (forceState != null) {
+        args['isSpeakerOn'] = forceState;
+      }
+      final result = await _controlChannel.invokeMethod<Map<dynamic, dynamic>>(
+        'toggleSpeaker',
+        args,
+      );
       return result?['isSpeakerOn'] as bool? ?? false;
     } catch (_) {
       return forceState ?? false;

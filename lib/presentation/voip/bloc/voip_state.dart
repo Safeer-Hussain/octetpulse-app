@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 import '../../../domain/entities/employee.dart';
 import '../../../domain/entities/voip_call_log.dart';
 import '../../../domain/entities/voip_telemetry.dart';
@@ -72,10 +73,18 @@ class VoipState extends Equatable {
       directory: directory ?? this.directory,
       filteredDirectory: filteredDirectory ?? this.filteredDirectory,
       callLogs: callLogs ?? this.callLogs,
-      activeCalleeId: clearActiveCall ? null : (activeCalleeId ?? this.activeCalleeId),
-      activeCalleeName: clearActiveCall ? null : (activeCalleeName ?? this.activeCalleeName),
-      activeCalleeRole: clearActiveCall ? null : (activeCalleeRole ?? this.activeCalleeRole),
-      activeCallId: clearActiveCall ? null : (activeCallId ?? this.activeCallId),
+      activeCalleeId: clearActiveCall
+          ? null
+          : (activeCalleeId ?? this.activeCalleeId),
+      activeCalleeName: clearActiveCall
+          ? null
+          : (activeCalleeName ?? this.activeCalleeName),
+      activeCalleeRole: clearActiveCall
+          ? null
+          : (activeCalleeRole ?? this.activeCalleeRole),
+      activeCallId: clearActiveCall
+          ? null
+          : (activeCallId ?? this.activeCallId),
       telemetry: telemetry ?? this.telemetry,
       isCallActive: isCallActive ?? this.isCallActive,
       isMuted: isMuted ?? this.isMuted,
@@ -91,23 +100,23 @@ class VoipState extends Equatable {
 
   @override
   List<Object?> get props => [
-        callStatus,
-        directory,
-        filteredDirectory,
-        callLogs,
-        activeCalleeId,
-        activeCalleeName,
-        activeCalleeRole,
-        activeCallId,
-        telemetry,
-        isCallActive,
-        isMuted,
-        isSpeakerOn,
-        isOnHold,
-        dtmfBuffer,
-        activeTab,
-        searchQuery,
-        feedbackMessage,
-        errorMessage,
-      ];
+    callStatus,
+    directory,
+    filteredDirectory,
+    callLogs,
+    activeCalleeId,
+    activeCalleeName,
+    activeCalleeRole,
+    activeCallId,
+    telemetry,
+    isCallActive,
+    isMuted,
+    isSpeakerOn,
+    isOnHold,
+    dtmfBuffer,
+    activeTab,
+    searchQuery,
+    feedbackMessage,
+    errorMessage,
+  ];
 }

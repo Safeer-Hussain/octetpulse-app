@@ -1,9 +1,16 @@
 import 'package:intl/intl.dart';
+
 import '../constants/app_constants.dart';
 
 class AppFormatters {
-  static final NumberFormat _currencyUsd = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-  static final NumberFormat _currencyPkr = NumberFormat.currency(symbol: 'PKR ', decimalDigits: 0);
+  static final NumberFormat _currencyUsd = NumberFormat.currency(
+    symbol: '\$',
+    decimalDigits: 2,
+  );
+  static final NumberFormat _currencyPkr = NumberFormat.currency(
+    symbol: 'PKR ',
+    decimalDigits: 0,
+  );
   static final DateFormat _dateFormat = DateFormat('MMM dd, yyyy');
   static final DateFormat _timeFormat = DateFormat('hh:mm a');
   static final DateFormat _dateTimeFormat = DateFormat('MMM dd, hh:mm a');
@@ -21,7 +28,8 @@ class AppFormatters {
 
   static String formatTime(DateTime dateTime) => _timeFormat.format(dateTime);
 
-  static String formatDateTime(DateTime dateTime) => _dateTimeFormat.format(dateTime);
+  static String formatDateTime(DateTime dateTime) =>
+      _dateTimeFormat.format(dateTime);
 
   static String formatDurationHoursMins(Duration duration) {
     final hours = duration.inHours;

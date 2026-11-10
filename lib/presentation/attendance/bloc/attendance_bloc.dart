@@ -1,6 +1,8 @@
 import 'dart:math';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/leave_request.dart';
 import '../../../domain/repositories/attendance_repository.dart';
@@ -31,19 +33,25 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       final history = await _repository.getAttendanceHistory();
       final leaveRequests = await _repository.getLeaveRequests();
 
-      final isCurrentActive = latest != null && (latest.status == 'Clocked In' || latest.status == 'On Break');
+      final isCurrentActive =
+          latest != null &&
+          (latest.status == 'Clocked In' || latest.status == 'On Break');
 
-      emit(state.copyWith(
-        status: AttendanceStatusState.loaded,
-        currentRecord: isCurrentActive ? latest : null,
-        history: history,
-        leaveRequests: leaveRequests,
-      ));
+      emit(
+        state.copyWith(
+          status: AttendanceStatusState.loaded,
+          currentRecord: isCurrentActive ? latest : null,
+          history: history,
+          leaveRequests: leaveRequests,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        status: AttendanceStatusState.error,
-        errorMessage: e.toString(),
-      ));
+      emit(
+        state.copyWith(
+          status: AttendanceStatusState.error,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
 
@@ -62,11 +70,14 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       );
 
       final updatedHistory = [record, ...state.history];
-      emit(state.copyWith(
-        currentRecord: record,
-        history: updatedHistory,
-        feedbackMessage: 'Clocked In successfully at ${AppConstants.hqLocationName}.',
-      ));
+      emit(
+        state.copyWith(
+          currentRecord: record,
+          history: updatedHistory,
+          feedbackMessage:
+              'Clocked In successfully at ${AppConstants.hqLocationName}.',
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Clock-in failed: $e'));
     }
@@ -78,14 +89,22 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
   ) async {
     if (state.currentRecord == null) return;
     try {
-      final updated = await _repository.toggleBreak(recordId: state.currentRecord!.id);
-      final updatedHistory = state.history.map((r) => r.id == updated.id ? updated : r).toList();
+      final updated = await _repository.toggleBreak(
+        recordId: state.currentRecord!.id,
+      );
+      final updatedHistory = state.history
+          .map((r) => r.id == updated.id ? updated : r)
+          .toList();
 
-      emit(state.copyWith(
-        currentRecord: updated,
-        history: updatedHistory,
-        feedbackMessage: updated.status == 'On Break' ? 'Break started.' : 'Break ended. Shift resumed.',
-      ));
+      emit(
+        state.copyWith(
+          currentRecord: updated,
+          history: updatedHistory,
+          feedbackMessage: updated.status == 'On Break'
+              ? 'Break started.'
+              : 'Break ended. Shift resumed.',
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Break toggle failed: $e'));
     }
@@ -97,14 +116,20 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
   ) async {
     if (state.currentRecord == null) return;
     try {
-      final updated = await _repository.clockOut(recordId: state.currentRecord!.id);
-      final updatedHistory = state.history.map((r) => r.id == updated.id ? updated : r).toList();
+      final updated = await _repository.clockOut(
+        recordId: state.currentRecord!.id,
+      );
+      final updatedHistory = state.history
+          .map((r) => r.id == updated.id ? updated : r)
+          .toList();
 
-      emit(state.copyWith(
-        clearCurrentRecord: true,
-        history: updatedHistory,
-        feedbackMessage: 'Clocked Out successfully.',
-      ));
+      emit(
+        state.copyWith(
+          clearCurrentRecord: true,
+          history: updatedHistory,
+          feedbackMessage: 'Clocked Out successfully.',
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Clock-out failed: $e'));
     }
@@ -129,10 +154,12 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       final saved = await _repository.submitLeaveRequest(request);
       final updatedRequests = [saved, ...state.leaveRequests];
 
-      emit(state.copyWith(
-        leaveRequests: updatedRequests,
-        feedbackMessage: 'Leave request submitted for team approval.',
-      ));
+      emit(
+        state.copyWith(
+          leaveRequests: updatedRequests,
+          feedbackMessage: 'Leave request submitted for team approval.',
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Leave submission failed: $e'));
     }
@@ -149,14 +176,20 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
         approverComment: event.comment,
       );
 
-      final updatedRequests = state.leaveRequests.map((r) => r.id == updated.id ? updated : r).toList();
+      final updatedRequests = state.leaveRequests
+          .map((r) => r.id == updated.id ? updated : r)
+          .toList();
 
-      emit(state.copyWith(
-        leaveRequests: updatedRequests,
-        feedbackMessage: 'Request #${updated.id} marked ${updated.status}.',
-      ));
+      emit(
+        state.copyWith(
+          leaveRequests: updatedRequests,
+          feedbackMessage: 'Request #${updated.id} marked ${updated.status}.',
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(errorMessage: 'Request approval mutation failed: $e'));
+      emit(
+        state.copyWith(errorMessage: 'Request approval mutation failed: $e'),
+      );
     }
   }
 
@@ -172,17 +205,25 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     );
     final isWithin = distance <= AppConstants.hqGeofenceRadiusMeters;
 
-    emit(state.copyWith(
-      currentLatitude: event.latitude,
-      currentLongitude: event.longitude,
-      geofenceDistanceMeters: distance,
-      isWithinGeofence: isWithin,
-    ));
+    emit(
+      state.copyWith(
+        currentLatitude: event.latitude,
+        currentLongitude: event.longitude,
+        geofenceDistanceMeters: distance,
+        isWithinGeofence: isWithin,
+      ),
+    );
   }
 
-  double _calculateDistanceMeters(double lat1, double lon1, double lat2, double lon2) {
+  double _calculateDistanceMeters(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
     const p = 0.017453292519943295; // Math.PI / 180
-    final a = 0.5 -
+    final a =
+        0.5 -
         cos((lat2 - lat1) * p) / 2 +
         cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
     return 12742000 * asin(sqrt(a)); // 2 * R * 1000 meters

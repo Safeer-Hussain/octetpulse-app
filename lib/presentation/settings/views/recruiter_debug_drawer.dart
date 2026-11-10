@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../core/constants/app_constants.dart';
 import '../../../core/di/injection.dart';
 import '../../../core/utils/app_feedback.dart';
@@ -35,7 +36,8 @@ class _RecruiterDebugDrawerState extends State<RecruiterDebugDrawer> {
   void _loadPrefs() {
     if (getIt.isRegistered<SharedPreferences>()) {
       _prefs = getIt<SharedPreferences>();
-      _latencyMs = (_prefs.getInt(AppConstants.prefSimulatedLatencyMs) ?? 450).toDouble();
+      _latencyMs = (_prefs.getInt(AppConstants.prefSimulatedLatencyMs) ?? 450)
+          .toDouble();
       _force503 = _prefs.getBool(AppConstants.prefForce503Error) ?? false;
       setState(() {
         _initialized = true;
@@ -58,7 +60,10 @@ class _RecruiterDebugDrawerState extends State<RecruiterDebugDrawer> {
     if (value) {
       AppFeedback.showWarning(context, 'Simulated HTTP 503 error activated.');
     } else {
-      AppFeedback.showSuccess(context, 'HTTP 503 error deactivated. Network normal.');
+      AppFeedback.showSuccess(
+        context,
+        'HTTP 503 error deactivated. Network normal.',
+      );
     }
   }
 
@@ -71,7 +76,10 @@ class _RecruiterDebugDrawerState extends State<RecruiterDebugDrawer> {
       ),
     );
     Navigator.of(context).pop();
-    AppFeedback.showInfo(context, 'Simulated incoming call connected with CSO Shahmeer Khan.');
+    AppFeedback.showInfo(
+      context,
+      'Simulated incoming call connected with CSO Shahmeer Khan.',
+    );
   }
 
   void _reloadAllBlocs() {
@@ -79,7 +87,10 @@ class _RecruiterDebugDrawerState extends State<RecruiterDebugDrawer> {
     context.read<PayrollBloc>().add(const LoadPayrollData());
     context.read<DispatchBloc>().add(const LoadDispatchData());
     context.read<VoipBloc>().add(const LoadVoipDirectoryAndLogs());
-    AppFeedback.showSuccess(context, 'All workforce BLoC state engines re-synchronized.');
+    AppFeedback.showSuccess(
+      context,
+      'All workforce BLoC state engines re-synchronized.',
+    );
   }
 
   @override
@@ -91,7 +102,10 @@ class _RecruiterDebugDrawerState extends State<RecruiterDebugDrawer> {
       child: SafeArea(
         child: _initialized
             ? ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 children: [
                   Row(
                     children: [
@@ -162,7 +176,7 @@ class _RecruiterDebugDrawerState extends State<RecruiterDebugDrawer> {
                         ),
                       ),
                       value: _force503,
-                      activeColor: colorScheme.error,
+                      activeTrackColor: colorScheme.error,
                       onChanged: _toggle503,
                     ),
                   ),
@@ -170,7 +184,10 @@ class _RecruiterDebugDrawerState extends State<RecruiterDebugDrawer> {
                   Card(
                     color: colorScheme.surfaceContainer,
                     child: ListTile(
-                      leading: Icon(Icons.phone_in_talk, color: colorScheme.secondary),
+                      leading: Icon(
+                        Icons.phone_in_talk,
+                        color: colorScheme.secondary,
+                      ),
                       title: Text(
                         'Simulate Incoming VoIP Call',
                         style: TextStyle(

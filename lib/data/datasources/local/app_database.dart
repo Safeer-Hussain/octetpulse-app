@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
@@ -18,11 +19,7 @@ class AppDatabase {
     final dbPath = await getDatabasesPath();
     final path = p.join(dbPath, _dbName);
 
-    return await openDatabase(
-      path,
-      version: _dbVersion,
-      onCreate: _onCreate,
-    );
+    return await openDatabase(path, version: _dbVersion, onCreate: _onCreate);
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -144,39 +141,303 @@ class AppDatabase {
 
   Future<void> seedInitialDataIfEmpty() async {
     final db = await database;
-    final count = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM employees')) ?? 0;
+    final count =
+        Sqflite.firstIntValue(
+          await db.rawQuery('SELECT COUNT(*) FROM employees'),
+        ) ??
+        0;
     if (count > 0) return;
 
     final batch = db.batch();
 
     // Seed 26 Employees across 4 Departments
     final employees = [
-      {'id': 'EMP-101', 'name': 'Safeer Hussain', 'email': 'safeer.h@octetpulse.io', 'department': 'Mobile Engineering', 'role': 'Principal Architect', 'avatar': 'assets/images/avatar_mobile.png', 'salary': 9800.0, 'hourly': 61.25, 'status': 'Available'},
-      {'id': 'EMP-102', 'name': 'Zainab Tariq', 'email': 'zainab.t@octetpulse.io', 'department': 'Mobile Engineering', 'role': 'Lead Flutter Engineer', 'avatar': 'assets/images/avatar_mobile.png', 'salary': 7500.0, 'hourly': 46.88, 'status': 'Available'},
-      {'id': 'EMP-103', 'name': 'Ahmed Raza', 'email': 'ahmed.r@octetpulse.io', 'department': 'Mobile Engineering', 'role': 'Senior iOS Engineer', 'avatar': 'assets/images/avatar_mobile.png', 'salary': 6800.0, 'hourly': 42.50, 'status': 'In Call'},
-      {'id': 'EMP-104', 'name': 'Bilal Farooq', 'email': 'bilal.f@octetpulse.io', 'department': 'Mobile Engineering', 'role': 'Senior Android Engineer', 'avatar': 'assets/images/avatar_mobile.png', 'salary': 6800.0, 'hourly': 42.50, 'status': 'Available'},
-      {'id': 'EMP-105', 'name': 'Fatima Noor', 'email': 'fatima.n@octetpulse.io', 'department': 'Mobile Engineering', 'role': 'UI/UX Design Lead', 'avatar': 'assets/images/avatar_mobile.png', 'salary': 6200.0, 'hourly': 38.75, 'status': 'Available'},
-      {'id': 'EMP-106', 'name': 'Usman Ali', 'email': 'usman.a@octetpulse.io', 'department': 'Field Operations', 'role': 'Field Ops Director', 'avatar': 'assets/images/avatar_field.png', 'salary': 7200.0, 'hourly': 45.00, 'status': 'Available'},
-      {'id': 'EMP-107', 'name': 'Hamza Sheikh', 'email': 'hamza.s@octetpulse.io', 'department': 'Field Operations', 'role': 'Senior Field Engineer', 'avatar': 'assets/images/avatar_field.png', 'salary': 5400.0, 'hourly': 33.75, 'status': 'Field Dispatch'},
-      {'id': 'EMP-108', 'name': 'Mustafa Khan', 'email': 'mustafa.k@octetpulse.io', 'department': 'Field Operations', 'role': 'Network Dispatch Lead', 'avatar': 'assets/images/avatar_field.png', 'salary': 5600.0, 'hourly': 35.00, 'status': 'Field Dispatch'},
-      {'id': 'EMP-109', 'name': 'Omer Qureshi', 'email': 'omer.q@octetpulse.io', 'department': 'Field Operations', 'role': 'Field Specialist', 'avatar': 'assets/images/avatar_field.png', 'salary': 4800.0, 'hourly': 30.00, 'status': 'Available'},
-      {'id': 'EMP-110', 'name': 'Ayesha Malik', 'email': 'ayesha.m@octetpulse.io', 'department': 'Field Operations', 'role': 'Site Reliability Engineer', 'avatar': 'assets/images/avatar_field.png', 'salary': 5900.0, 'hourly': 36.88, 'status': 'Field Dispatch'},
-      {'id': 'EMP-111', 'name': 'Danish Baig', 'email': 'danish.b@octetpulse.io', 'department': 'Cloud Infrastructure', 'role': 'Cloud Platform Architect', 'avatar': 'assets/images/avatar_cloud.png', 'salary': 8900.0, 'hourly': 55.63, 'status': 'Available'},
-      {'id': 'EMP-112', 'name': 'Khadija Rehman', 'email': 'khadija.r@octetpulse.io', 'department': 'Cloud Infrastructure', 'role': 'DevOps Lead', 'avatar': 'assets/images/avatar_cloud.png', 'salary': 7400.0, 'hourly': 46.25, 'status': 'In Call'},
-      {'id': 'EMP-113', 'name': 'Saad Siddiqui', 'email': 'saad.s@octetpulse.io', 'department': 'Cloud Infrastructure', 'role': 'Kubernetes Administrator', 'avatar': 'assets/images/avatar_cloud.png', 'salary': 6600.0, 'hourly': 41.25, 'status': 'Available'},
-      {'id': 'EMP-114', 'name': 'Mariam Javed', 'email': 'mariam.j@octetpulse.io', 'department': 'Cloud Infrastructure', 'role': 'Backend Systems Engineer', 'avatar': 'assets/images/avatar_cloud.png', 'salary': 6300.0, 'hourly': 39.38, 'status': 'Available'},
-      {'id': 'EMP-115', 'name': 'Tariq Mehmood', 'email': 'tariq.m@octetpulse.io', 'department': 'Cloud Infrastructure', 'role': 'Database Reliability Lead', 'avatar': 'assets/images/avatar_cloud.png', 'salary': 7100.0, 'hourly': 44.38, 'status': 'Available'},
-      {'id': 'EMP-116', 'name': 'Shahmeer Khan', 'email': 'shahmeer.k@octetpulse.io', 'department': 'Security & Compliance', 'role': 'Chief Security Officer', 'avatar': 'assets/images/avatar_security.png', 'salary': 9400.0, 'hourly': 58.75, 'status': 'Available'},
-      {'id': 'EMP-117', 'name': 'Hina Bashir', 'email': 'hina.b@octetpulse.io', 'department': 'Security & Compliance', 'role': 'Security Analyst', 'avatar': 'assets/images/avatar_security.png', 'salary': 6500.0, 'hourly': 40.63, 'status': 'Available'},
-      {'id': 'EMP-118', 'name': 'Waqas Akram', 'email': 'waqas.a@octetpulse.io', 'department': 'Security & Compliance', 'role': 'Compliance Auditor', 'avatar': 'assets/images/avatar_security.png', 'salary': 6100.0, 'hourly': 38.13, 'status': 'In Call'},
-      {'id': 'EMP-119', 'name': 'Noman Butt', 'email': 'noman.b@octetpulse.io', 'department': 'Security & Compliance', 'role': 'Cryptographic Protocol Eng', 'avatar': 'assets/images/avatar_security.png', 'salary': 7800.0, 'hourly': 48.75, 'status': 'Available'},
-      {'id': 'EMP-120', 'name': 'Sana Yousaf', 'email': 'sana.y@octetpulse.io', 'department': 'Mobile Engineering', 'role': 'QA Automation Lead', 'avatar': 'assets/images/avatar_mobile.png', 'salary': 5800.0, 'hourly': 36.25, 'status': 'Available'},
-      {'id': 'EMP-121', 'name': 'Adnan Zafar', 'email': 'adnan.z@octetpulse.io', 'department': 'Field Operations', 'role': 'Hardware Diagnostics Eng', 'avatar': 'assets/images/avatar_field.png', 'salary': 5200.0, 'hourly': 32.50, 'status': 'Available'},
-      {'id': 'EMP-122', 'name': 'Rabia Chaudhry', 'email': 'rabia.c@octetpulse.io', 'department': 'Cloud Infrastructure', 'role': 'Site Telemetry Eng', 'avatar': 'assets/images/avatar_cloud.png', 'salary': 6400.0, 'hourly': 40.00, 'status': 'Available'},
-      {'id': 'EMP-123', 'name': 'Kashif Lodhi', 'email': 'kashif.l@octetpulse.io', 'department': 'Security & Compliance', 'role': 'Penetration Tester', 'avatar': 'assets/images/avatar_security.png', 'salary': 7300.0, 'hourly': 45.63, 'status': 'Available'},
-      {'id': 'EMP-124', 'name': 'Farhan Gill', 'email': 'farhan.g@octetpulse.io', 'department': 'Mobile Engineering', 'role': 'WebRTC Protocol Engineer', 'avatar': 'assets/images/avatar_mobile.png', 'salary': 7600.0, 'hourly': 47.50, 'status': 'In Call'},
-      {'id': 'EMP-125', 'name': 'Mahnoor Aslam', 'email': 'mahnoor.a@octetpulse.io', 'department': 'Field Operations', 'role': 'Client Dispatch Manager', 'avatar': 'assets/images/avatar_field.png', 'salary': 6100.0, 'hourly': 38.13, 'status': 'Available'},
-      {'id': 'EMP-126', 'name': 'Zubair Shah', 'email': 'zubair.s@octetpulse.io', 'department': 'Cloud Infrastructure', 'role': 'FinOps & Billing Specialist', 'avatar': 'assets/images/avatar_cloud.png', 'salary': 6900.0, 'hourly': 43.13, 'status': 'Available'},
+      {
+        'id': 'EMP-101',
+        'name': 'Safeer Hussain',
+        'email': 'safeer.h@octetpulse.io',
+        'department': 'Mobile Engineering',
+        'role': 'Principal Architect',
+        'avatar': 'assets/images/avatar_mobile.png',
+        'salary': 9800.0,
+        'hourly': 61.25,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-102',
+        'name': 'Zainab Tariq',
+        'email': 'zainab.t@octetpulse.io',
+        'department': 'Mobile Engineering',
+        'role': 'Lead Flutter Engineer',
+        'avatar': 'assets/images/avatar_mobile.png',
+        'salary': 7500.0,
+        'hourly': 46.88,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-103',
+        'name': 'Ahmed Raza',
+        'email': 'ahmed.r@octetpulse.io',
+        'department': 'Mobile Engineering',
+        'role': 'Senior iOS Engineer',
+        'avatar': 'assets/images/avatar_mobile.png',
+        'salary': 6800.0,
+        'hourly': 42.50,
+        'status': 'In Call',
+      },
+      {
+        'id': 'EMP-104',
+        'name': 'Bilal Farooq',
+        'email': 'bilal.f@octetpulse.io',
+        'department': 'Mobile Engineering',
+        'role': 'Senior Android Engineer',
+        'avatar': 'assets/images/avatar_mobile.png',
+        'salary': 6800.0,
+        'hourly': 42.50,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-105',
+        'name': 'Fatima Noor',
+        'email': 'fatima.n@octetpulse.io',
+        'department': 'Mobile Engineering',
+        'role': 'UI/UX Design Lead',
+        'avatar': 'assets/images/avatar_mobile.png',
+        'salary': 6200.0,
+        'hourly': 38.75,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-106',
+        'name': 'Usman Ali',
+        'email': 'usman.a@octetpulse.io',
+        'department': 'Field Operations',
+        'role': 'Field Ops Director',
+        'avatar': 'assets/images/avatar_field.png',
+        'salary': 7200.0,
+        'hourly': 45.00,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-107',
+        'name': 'Hamza Sheikh',
+        'email': 'hamza.s@octetpulse.io',
+        'department': 'Field Operations',
+        'role': 'Senior Field Engineer',
+        'avatar': 'assets/images/avatar_field.png',
+        'salary': 5400.0,
+        'hourly': 33.75,
+        'status': 'Field Dispatch',
+      },
+      {
+        'id': 'EMP-108',
+        'name': 'Mustafa Khan',
+        'email': 'mustafa.k@octetpulse.io',
+        'department': 'Field Operations',
+        'role': 'Network Dispatch Lead',
+        'avatar': 'assets/images/avatar_field.png',
+        'salary': 5600.0,
+        'hourly': 35.00,
+        'status': 'Field Dispatch',
+      },
+      {
+        'id': 'EMP-109',
+        'name': 'Omer Qureshi',
+        'email': 'omer.q@octetpulse.io',
+        'department': 'Field Operations',
+        'role': 'Field Specialist',
+        'avatar': 'assets/images/avatar_field.png',
+        'salary': 4800.0,
+        'hourly': 30.00,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-110',
+        'name': 'Ayesha Malik',
+        'email': 'ayesha.m@octetpulse.io',
+        'department': 'Field Operations',
+        'role': 'Site Reliability Engineer',
+        'avatar': 'assets/images/avatar_field.png',
+        'salary': 5900.0,
+        'hourly': 36.88,
+        'status': 'Field Dispatch',
+      },
+      {
+        'id': 'EMP-111',
+        'name': 'Danish Baig',
+        'email': 'danish.b@octetpulse.io',
+        'department': 'Cloud Infrastructure',
+        'role': 'Cloud Platform Architect',
+        'avatar': 'assets/images/avatar_cloud.png',
+        'salary': 8900.0,
+        'hourly': 55.63,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-112',
+        'name': 'Khadija Rehman',
+        'email': 'khadija.r@octetpulse.io',
+        'department': 'Cloud Infrastructure',
+        'role': 'DevOps Lead',
+        'avatar': 'assets/images/avatar_cloud.png',
+        'salary': 7400.0,
+        'hourly': 46.25,
+        'status': 'In Call',
+      },
+      {
+        'id': 'EMP-113',
+        'name': 'Saad Siddiqui',
+        'email': 'saad.s@octetpulse.io',
+        'department': 'Cloud Infrastructure',
+        'role': 'Kubernetes Administrator',
+        'avatar': 'assets/images/avatar_cloud.png',
+        'salary': 6600.0,
+        'hourly': 41.25,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-114',
+        'name': 'Mariam Javed',
+        'email': 'mariam.j@octetpulse.io',
+        'department': 'Cloud Infrastructure',
+        'role': 'Backend Systems Engineer',
+        'avatar': 'assets/images/avatar_cloud.png',
+        'salary': 6300.0,
+        'hourly': 39.38,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-115',
+        'name': 'Tariq Mehmood',
+        'email': 'tariq.m@octetpulse.io',
+        'department': 'Cloud Infrastructure',
+        'role': 'Database Reliability Lead',
+        'avatar': 'assets/images/avatar_cloud.png',
+        'salary': 7100.0,
+        'hourly': 44.38,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-116',
+        'name': 'Shahmeer Khan',
+        'email': 'shahmeer.k@octetpulse.io',
+        'department': 'Security & Compliance',
+        'role': 'Chief Security Officer',
+        'avatar': 'assets/images/avatar_security.png',
+        'salary': 9400.0,
+        'hourly': 58.75,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-117',
+        'name': 'Hina Bashir',
+        'email': 'hina.b@octetpulse.io',
+        'department': 'Security & Compliance',
+        'role': 'Security Analyst',
+        'avatar': 'assets/images/avatar_security.png',
+        'salary': 6500.0,
+        'hourly': 40.63,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-118',
+        'name': 'Waqas Akram',
+        'email': 'waqas.a@octetpulse.io',
+        'department': 'Security & Compliance',
+        'role': 'Compliance Auditor',
+        'avatar': 'assets/images/avatar_security.png',
+        'salary': 6100.0,
+        'hourly': 38.13,
+        'status': 'In Call',
+      },
+      {
+        'id': 'EMP-119',
+        'name': 'Noman Butt',
+        'email': 'noman.b@octetpulse.io',
+        'department': 'Security & Compliance',
+        'role': 'Cryptographic Protocol Eng',
+        'avatar': 'assets/images/avatar_security.png',
+        'salary': 7800.0,
+        'hourly': 48.75,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-120',
+        'name': 'Sana Yousaf',
+        'email': 'sana.y@octetpulse.io',
+        'department': 'Mobile Engineering',
+        'role': 'QA Automation Lead',
+        'avatar': 'assets/images/avatar_mobile.png',
+        'salary': 5800.0,
+        'hourly': 36.25,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-121',
+        'name': 'Adnan Zafar',
+        'email': 'adnan.z@octetpulse.io',
+        'department': 'Field Operations',
+        'role': 'Hardware Diagnostics Eng',
+        'avatar': 'assets/images/avatar_field.png',
+        'salary': 5200.0,
+        'hourly': 32.50,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-122',
+        'name': 'Rabia Chaudhry',
+        'email': 'rabia.c@octetpulse.io',
+        'department': 'Cloud Infrastructure',
+        'role': 'Site Telemetry Eng',
+        'avatar': 'assets/images/avatar_cloud.png',
+        'salary': 6400.0,
+        'hourly': 40.00,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-123',
+        'name': 'Kashif Lodhi',
+        'email': 'kashif.l@octetpulse.io',
+        'department': 'Security & Compliance',
+        'role': 'Penetration Tester',
+        'avatar': 'assets/images/avatar_security.png',
+        'salary': 7300.0,
+        'hourly': 45.63,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-124',
+        'name': 'Farhan Gill',
+        'email': 'farhan.g@octetpulse.io',
+        'department': 'Mobile Engineering',
+        'role': 'WebRTC Protocol Engineer',
+        'avatar': 'assets/images/avatar_mobile.png',
+        'salary': 7600.0,
+        'hourly': 47.50,
+        'status': 'In Call',
+      },
+      {
+        'id': 'EMP-125',
+        'name': 'Mahnoor Aslam',
+        'email': 'mahnoor.a@octetpulse.io',
+        'department': 'Field Operations',
+        'role': 'Client Dispatch Manager',
+        'avatar': 'assets/images/avatar_field.png',
+        'salary': 6100.0,
+        'hourly': 38.13,
+        'status': 'Available',
+      },
+      {
+        'id': 'EMP-126',
+        'name': 'Zubair Shah',
+        'email': 'zubair.s@octetpulse.io',
+        'department': 'Cloud Infrastructure',
+        'role': 'FinOps & Billing Specialist',
+        'avatar': 'assets/images/avatar_cloud.png',
+        'salary': 6900.0,
+        'hourly': 43.13,
+        'status': 'Available',
+      },
     ];
 
     for (final emp in employees) {
@@ -199,7 +460,9 @@ class AppDatabase {
       'id': 'ATT-001',
       'employeeId': 'EMP-101',
       'employeeName': 'Safeer Hussain',
-      'checkInTime': now.subtract(const Duration(hours: 4, minutes: 12)).toIso8601String(),
+      'checkInTime': now
+          .subtract(const Duration(hours: 4, minutes: 12))
+          .toIso8601String(),
       'checkOutTime': null,
       'durationSeconds': 15120,
       'status': 'Clocked In',
@@ -213,7 +476,9 @@ class AppDatabase {
       'id': 'ATT-002',
       'employeeId': 'EMP-102',
       'employeeName': 'Zainab Tariq',
-      'checkInTime': now.subtract(const Duration(hours: 5, minutes: 30)).toIso8601String(),
+      'checkInTime': now
+          .subtract(const Duration(hours: 5, minutes: 30))
+          .toIso8601String(),
       'checkOutTime': null,
       'durationSeconds': 19800,
       'status': 'Clocked In',
@@ -230,7 +495,8 @@ class AppDatabase {
       'employeeName': 'Hamza Sheikh',
       'requestType': 'Overtime Compensation',
       'hours': 8.0,
-      'reason': 'Deployment of Gulberg tech corridor fiber uplink over weekend.',
+      'reason':
+          'Deployment of Gulberg tech corridor fiber uplink over weekend.',
       'submittedAt': now.subtract(const Duration(hours: 14)).toIso8601String(),
       'status': 'Pending',
       'approverComment': null,
@@ -252,7 +518,12 @@ class AppDatabase {
     for (final emp in employees) {
       final base = (emp['salary'] as num).toDouble();
       final hourly = (emp['hourly'] as num).toDouble();
-      final otHours = (emp['id'] == 'EMP-101' || emp['id'] == 'EMP-107' || emp['id'] == 'EMP-111') ? 14.0 : 4.0;
+      final otHours =
+          (emp['id'] == 'EMP-101' ||
+              emp['id'] == 'EMP-107' ||
+              emp['id'] == 'EMP-111')
+          ? 14.0
+          : 4.0;
       final otPay = otHours * hourly * 1.5;
       final sprintBonus = 500.0;
       final gross = base + otPay + sprintBonus;
@@ -275,7 +546,9 @@ class AppDatabase {
         'providentFundUsd': pf,
         'netPayableUsd': net,
         'status': emp['id'] == 'EMP-101' ? 'Disbursed' : 'Pending',
-        'disbursedAt': emp['id'] == 'EMP-101' ? now.subtract(const Duration(days: 2)).toIso8601String() : null,
+        'disbursedAt': emp['id'] == 'EMP-101'
+            ? now.subtract(const Duration(days: 2)).toIso8601String()
+            : null,
         'monthYear': 'November 2026',
       });
     }
@@ -354,7 +627,7 @@ class AppDatabase {
         'dest': 'HQ Standby Rapid Response',
         'taskId': null,
         'route': [
-          [31.4754, 74.3436]
+          [31.4754, 74.3436],
         ],
       },
     ];
@@ -431,7 +704,9 @@ class AppDatabase {
       'calleeRole': 'Lead Flutter Engineer',
       'callType': 'Outbound',
       'durationSeconds': 245,
-      'timestamp': now.subtract(const Duration(hours: 2, minutes: 15)).toIso8601String(),
+      'timestamp': now
+          .subtract(const Duration(hours: 2, minutes: 15))
+          .toIso8601String(),
       'cipher': 'SRTP-AES256',
       'audioCodec': 'OPUS-HD',
       'mosScore': 4.38,
@@ -444,7 +719,9 @@ class AppDatabase {
       'calleeRole': 'Cloud Platform Architect',
       'callType': 'Inbound',
       'durationSeconds': 512,
-      'timestamp': now.subtract(const Duration(hours: 4, minutes: 50)).toIso8601String(),
+      'timestamp': now
+          .subtract(const Duration(hours: 4, minutes: 50))
+          .toIso8601String(),
       'cipher': 'SRTP-AES256',
       'audioCodec': 'OPUS-HD',
       'mosScore': 4.42,

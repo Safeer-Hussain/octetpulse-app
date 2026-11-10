@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+
 import '../../../domain/entities/voip_call_log.dart';
 import '../../../domain/repositories/voip_repository.dart';
 import 'voip_event.dart';
@@ -23,7 +25,9 @@ class VoipBloc extends Bloc<VoipEvent, VoipState> {
     on<SearchDirectoryEvent>(_onSearchDirectory);
     on<SwitchVoipTabEvent>(_onSwitchVoipTab);
 
-    _telemetrySubscription = _repository.getTelemetryStream().listen((telemetry) {
+    _telemetrySubscription = _repository.getTelemetryStream().listen((
+      telemetry,
+    ) {
       add(TelemetryReceivedEvent(telemetry));
     });
   }
@@ -36,11 +40,13 @@ class VoipBloc extends Bloc<VoipEvent, VoipState> {
       final directory = await _repository.getDirectory();
       final logs = await _repository.getCallLogs();
 
-      emit(state.copyWith(
-        directory: directory,
-        filteredDirectory: directory,
-        callLogs: logs,
-      ));
+      emit(
+        state.copyWith(
+          directory: directory,
+          filteredDirectory: directory,
+          callLogs: logs,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Failed to load VoIP data: $e'));
     }
@@ -50,15 +56,18 @@ class VoipBloc extends Bloc<VoipEvent, VoipState> {
     InitiateVoipCallEvent event,
     Emitter<VoipState> emit,
   ) async {
-    emit(state.copyWith(
-      callStatus: VoipCallStatus.calling,
-      activeCalleeId: event.calleeId,
-      activeCalleeName: event.calleeName,
-      activeCalleeRole: event.calleeRole,
-      isCallActive: true,
-      activeTab: 1, // Auto-switch to Call Cockpit
-      feedbackMessage: 'Establishing encrypted SRTP-AES256 session with ${event.calleeName}...',
-    ));
+    emit(
+      state.copyWith(
+        callStatus: VoipCallStatus.calling,
+        activeCalleeId: event.calleeId,
+        activeCalleeName: event.calleeName,
+        activeCalleeRole: event.calleeRole,
+        isCallActive: true,
+        activeTab: 1, // Auto-switch to Call Cockpit
+        feedbackMessage:
+            'Establishing encrypted SRTP-AES256 session with ${event.calleeName}...',
+      ),
+    );
 
     try {
       final res = await _repository.initiateCall(
@@ -68,16 +77,20 @@ class VoipBloc extends Bloc<VoipEvent, VoipState> {
 
       final callId = res['callId'] as String? ?? 'call_active';
 
-      emit(state.copyWith(
-        callStatus: VoipCallStatus.active,
-        activeCallId: callId,
-        feedbackMessage: 'Connected securely. Cipher: SRTP-AES256.',
-      ));
+      emit(
+        state.copyWith(
+          callStatus: VoipCallStatus.active,
+          activeCallId: callId,
+          feedbackMessage: 'Connected securely. Cipher: SRTP-AES256.',
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        callStatus: VoipCallStatus.error,
-        errorMessage: 'VoIP connection failed: $e',
-      ));
+      emit(
+        state.copyWith(
+          callStatus: VoipCallStatus.error,
+          errorMessage: 'VoIP connection failed: $e',
+        ),
+      );
     }
   }
 
@@ -87,7 +100,8 @@ class VoipBloc extends Bloc<VoipEvent, VoipState> {
   ) async {
     try {
       final res = await _repository.endCall();
-      final duration = res['durationSeconds'] as int? ?? state.telemetry.callDurationSec;
+      final duration =
+          res['durationSeconds'] as int? ?? state.telemetry.callDurationSec;
 
       if (state.activeCalleeId != null) {
         final log = VoipCallLog(
@@ -106,28 +120,34 @@ class VoipBloc extends Bloc<VoipEvent, VoipState> {
         await _repository.logCompletedCall(log);
         final updatedLogs = [log, ...state.callLogs];
 
-        emit(state.copyWith(
-          callStatus: VoipCallStatus.idle,
-          clearActiveCall: true,
-          isCallActive: false,
-          callLogs: updatedLogs,
-          dtmfBuffer: '',
-          feedbackMessage: 'Call terminated. Duration: ${duration}s.',
-        ));
+        emit(
+          state.copyWith(
+            callStatus: VoipCallStatus.idle,
+            clearActiveCall: true,
+            isCallActive: false,
+            callLogs: updatedLogs,
+            dtmfBuffer: '',
+            feedbackMessage: 'Call terminated. Duration: ${duration}s.',
+          ),
+        );
       } else {
-        emit(state.copyWith(
-          callStatus: VoipCallStatus.idle,
-          clearActiveCall: true,
-          isCallActive: false,
-        ));
+        emit(
+          state.copyWith(
+            callStatus: VoipCallStatus.idle,
+            clearActiveCall: true,
+            isCallActive: false,
+          ),
+        );
       }
     } catch (e) {
-      emit(state.copyWith(
-        callStatus: VoipCallStatus.idle,
-        clearActiveCall: true,
-        isCallActive: false,
-        errorMessage: 'Error terminating call: $e',
-      ));
+      emit(
+        state.copyWith(
+          callStatus: VoipCallStatus.idle,
+          clearActiveCall: true,
+          isCallActive: false,
+          errorMessage: 'Error terminating call: $e',
+        ),
+      );
     }
   }
 
@@ -137,10 +157,14 @@ class VoipBloc extends Bloc<VoipEvent, VoipState> {
   ) async {
     try {
       final isMuted = await _repository.toggleMute();
-      emit(state.copyWith(
-        isMuted: isMuted,
-        feedbackMessage: isMuted ? 'Microphone muted.' : 'Microphone unmuted.',
-      ));
+      emit(
+        state.copyWith(
+          isMuted: isMuted,
+          feedbackMessage: isMuted
+              ? 'Microphone muted.'
+              : 'Microphone unmuted.',
+        ),
+      );
     } catch (_) {
       emit(state.copyWith(isMuted: !state.isMuted));
     }
@@ -152,30 +176,30 @@ class VoipBloc extends Bloc<VoipEvent, VoipState> {
   ) async {
     try {
       final isSpeaker = await _repository.toggleSpeaker();
-      emit(state.copyWith(
-        isSpeakerOn: isSpeaker,
-        feedbackMessage: isSpeaker ? 'Speakerphone active.' : 'Handset earpiece active.',
-      ));
+      emit(
+        state.copyWith(
+          isSpeakerOn: isSpeaker,
+          feedbackMessage: isSpeaker
+              ? 'Speakerphone active.'
+              : 'Handset earpiece active.',
+        ),
+      );
     } catch (_) {
       emit(state.copyWith(isSpeakerOn: !state.isSpeakerOn));
     }
   }
 
-  void _onToggleHold(
-    ToggleVoipHoldEvent event,
-    Emitter<VoipState> emit,
-  ) {
+  void _onToggleHold(ToggleVoipHoldEvent event, Emitter<VoipState> emit) {
     final nextHold = !state.isOnHold;
-    emit(state.copyWith(
-      isOnHold: nextHold,
-      feedbackMessage: nextHold ? 'Call placed on hold.' : 'Call resumed.',
-    ));
+    emit(
+      state.copyWith(
+        isOnHold: nextHold,
+        feedbackMessage: nextHold ? 'Call placed on hold.' : 'Call resumed.',
+      ),
+    );
   }
 
-  void _onSendDtmfTone(
-    SendDtmfToneEvent event,
-    Emitter<VoipState> emit,
-  ) {
+  void _onSendDtmfTone(SendDtmfToneEvent event, Emitter<VoipState> emit) {
     final updated = state.dtmfBuffer + event.digit;
     emit(state.copyWith(dtmfBuffer: updated));
   }
@@ -184,23 +208,19 @@ class VoipBloc extends Bloc<VoipEvent, VoipState> {
     TelemetryReceivedEvent event,
     Emitter<VoipState> emit,
   ) {
-    emit(state.copyWith(
-      telemetry: event.telemetry,
-      isMuted: event.telemetry.isMuted,
-      isSpeakerOn: event.telemetry.isSpeakerOn,
-    ));
+    emit(
+      state.copyWith(
+        telemetry: event.telemetry,
+        isMuted: event.telemetry.isMuted,
+        isSpeakerOn: event.telemetry.isSpeakerOn,
+      ),
+    );
   }
 
-  void _onSearchDirectory(
-    SearchDirectoryEvent event,
-    Emitter<VoipState> emit,
-  ) {
+  void _onSearchDirectory(SearchDirectoryEvent event, Emitter<VoipState> emit) {
     final query = event.query.toLowerCase().trim();
     if (query.isEmpty) {
-      emit(state.copyWith(
-        searchQuery: '',
-        filteredDirectory: state.directory,
-      ));
+      emit(state.copyWith(searchQuery: '', filteredDirectory: state.directory));
       return;
     }
 
@@ -211,16 +231,10 @@ class VoipBloc extends Bloc<VoipEvent, VoipState> {
           emp.email.toLowerCase().contains(query);
     }).toList();
 
-    emit(state.copyWith(
-      searchQuery: event.query,
-      filteredDirectory: filtered,
-    ));
+    emit(state.copyWith(searchQuery: event.query, filteredDirectory: filtered));
   }
 
-  void _onSwitchVoipTab(
-    SwitchVoipTabEvent event,
-    Emitter<VoipState> emit,
-  ) {
+  void _onSwitchVoipTab(SwitchVoipTabEvent event, Emitter<VoipState> emit) {
     emit(state.copyWith(activeTab: event.tabIndex));
   }
 

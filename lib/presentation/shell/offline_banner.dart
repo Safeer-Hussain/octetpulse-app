@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 
@@ -18,7 +19,8 @@ class _OfflineBannerState extends State<OfflineBanner> {
     super.initState();
     _checkInitialConnectivity();
     _subscription = Connectivity().onConnectivityChanged.listen((results) {
-      final offline = results.contains(ConnectivityResult.none) || results.isEmpty;
+      final offline =
+          results.contains(ConnectivityResult.none) || results.isEmpty;
       if (mounted && offline != _isOffline) {
         setState(() {
           _isOffline = offline;
@@ -30,7 +32,8 @@ class _OfflineBannerState extends State<OfflineBanner> {
   Future<void> _checkInitialConnectivity() async {
     try {
       final results = await Connectivity().checkConnectivity();
-      final offline = results.contains(ConnectivityResult.none) || results.isEmpty;
+      final offline =
+          results.contains(ConnectivityResult.none) || results.isEmpty;
       if (mounted) {
         setState(() {
           _isOffline = offline;
@@ -59,7 +62,11 @@ class _OfflineBannerState extends State<OfflineBanner> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.cloud_off_outlined, size: 16, color: colorScheme.onErrorContainer),
+          Icon(
+            Icons.cloud_off_outlined,
+            size: 16,
+            color: colorScheme.onErrorContainer,
+          ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(

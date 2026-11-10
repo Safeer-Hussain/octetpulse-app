@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+
 import '../../../domain/entities/dispatch_task.dart';
 import '../../../domain/entities/field_agent.dart';
 import '../../../domain/repositories/dispatch_repository.dart';
@@ -29,17 +31,21 @@ class DispatchBloc extends Bloc<DispatchEvent, DispatchState> {
     try {
       final agents = await _repository.getFieldAgents();
       final tasks = await _repository.getDispatchTasks();
-      emit(state.copyWith(
-        status: DispatchStatusState.loaded,
-        agents: agents,
-        tasks: tasks,
-        selectedAgent: agents.isNotEmpty ? agents.first : null,
-      ));
+      emit(
+        state.copyWith(
+          status: DispatchStatusState.loaded,
+          agents: agents,
+          tasks: tasks,
+          selectedAgent: agents.isNotEmpty ? agents.first : null,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        status: DispatchStatusState.error,
-        errorMessage: 'Failed to load fleet tracking data: $e',
-      ));
+      emit(
+        state.copyWith(
+          status: DispatchStatusState.error,
+          errorMessage: 'Failed to load fleet tracking data: $e',
+        ),
+      );
     }
   }
 
@@ -51,18 +57,25 @@ class DispatchBloc extends Bloc<DispatchEvent, DispatchState> {
     _simulationTimer?.cancel();
 
     if (next) {
-      _simulationTimer = Timer.periodic(const Duration(milliseconds: 1800), (_) {
+      _simulationTimer = Timer.periodic(const Duration(milliseconds: 1800), (
+        _,
+      ) {
         add(const SimulationTickEvent());
       });
-      emit(state.copyWith(
-        isSimulatingMovement: true,
-        feedbackMessage: 'Live fleet movement simulation activated across Lahore nodes.',
-      ));
+      emit(
+        state.copyWith(
+          isSimulatingMovement: true,
+          feedbackMessage:
+              'Live fleet movement simulation activated across Lahore nodes.',
+        ),
+      );
     } else {
-      emit(state.copyWith(
-        isSimulatingMovement: false,
-        feedbackMessage: 'Fleet movement simulation paused.',
-      ));
+      emit(
+        state.copyWith(
+          isSimulatingMovement: false,
+          feedbackMessage: 'Fleet movement simulation paused.',
+        ),
+      );
     }
   }
 
@@ -86,7 +99,9 @@ class DispatchBloc extends Bloc<DispatchEvent, DispatchState> {
       final newLat = target[0];
       final newLng = target[1];
       final newSpeed = agent.speedKmh > 0 ? (28.0 + ((step * 7) % 35)) : 0.0;
-      final newEta = agent.currentEtaMins > 0 ? ((agent.currentEtaMins - 1).clamp(1, 45)) : 0;
+      final newEta = agent.currentEtaMins > 0
+          ? ((agent.currentEtaMins - 1).clamp(1, 45))
+          : 0;
 
       await _repository.updateAgentLocation(agent.id, newLat, newLng, newSpeed);
 
@@ -107,11 +122,13 @@ class DispatchBloc extends Bloc<DispatchEvent, DispatchState> {
       }
     }
 
-    emit(state.copyWith(
-      agents: updatedAgents,
-      simulationStep: step,
-      selectedAgent: updatedSelected,
-    ));
+    emit(
+      state.copyWith(
+        agents: updatedAgents,
+        simulationStep: step,
+        selectedAgent: updatedSelected,
+      ),
+    );
   }
 
   void _onSelectFieldAgent(
@@ -155,12 +172,14 @@ class DispatchBloc extends Bloc<DispatchEvent, DispatchState> {
         updatedSelected = updatedSelected?.copyWith(activeTaskId: saved.id);
       }
 
-      emit(state.copyWith(
-        tasks: updatedTasks,
-        agents: updatedAgents,
-        selectedAgent: updatedSelected,
-        feedbackMessage: 'Task #${saved.id} assigned to ${saved.agentName}.',
-      ));
+      emit(
+        state.copyWith(
+          tasks: updatedTasks,
+          agents: updatedAgents,
+          selectedAgent: updatedSelected,
+          feedbackMessage: 'Task #${saved.id} assigned to ${saved.agentName}.',
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Task assignment failed: $e'));
     }
@@ -171,13 +190,20 @@ class DispatchBloc extends Bloc<DispatchEvent, DispatchState> {
     Emitter<DispatchState> emit,
   ) async {
     try {
-      final updated = await _repository.updateTaskStatus(event.taskId, event.status);
-      final updatedTasks = state.tasks.map((t) => t.id == updated.id ? updated : t).toList();
+      final updated = await _repository.updateTaskStatus(
+        event.taskId,
+        event.status,
+      );
+      final updatedTasks = state.tasks
+          .map((t) => t.id == updated.id ? updated : t)
+          .toList();
 
-      emit(state.copyWith(
-        tasks: updatedTasks,
-        feedbackMessage: 'Task #${updated.id} marked ${updated.status}.',
-      ));
+      emit(
+        state.copyWith(
+          tasks: updatedTasks,
+          feedbackMessage: 'Task #${updated.id} marked ${updated.status}.',
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Task update failed: $e'));
     }

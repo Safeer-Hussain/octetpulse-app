@@ -61,7 +61,11 @@ class VoipRepositoryImpl implements VoipRepository {
     required String calleeName,
     String codec = 'OPUS-HD',
   }) {
-    return _bridge.initiateCall(calleeId: calleeId, calleeName: calleeName, codec: codec);
+    return _bridge.initiateCall(
+      calleeId: calleeId,
+      calleeName: calleeName,
+      codec: codec,
+    );
   }
 
   @override

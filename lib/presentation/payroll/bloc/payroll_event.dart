@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 import '../../../domain/entities/payroll_record.dart';
 
 abstract class PayrollEvent extends Equatable {

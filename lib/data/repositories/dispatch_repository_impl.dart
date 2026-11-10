@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import '../../domain/entities/dispatch_task.dart';
 import '../../domain/entities/field_agent.dart';
 import '../../domain/repositories/dispatch_repository.dart';
@@ -24,15 +25,16 @@ class DispatchRepositoryImpl implements DispatchRepository {
   }
 
   @override
-  Future<void> updateAgentLocation(String agentId, double lat, double lng, double speed) async {
+  Future<void> updateAgentLocation(
+    String agentId,
+    double lat,
+    double lng,
+    double speed,
+  ) async {
     final db = await _db.database;
     await db.update(
       'field_agents',
-      {
-        'currentLat': lat,
-        'currentLng': lng,
-        'speedKmh': speed,
-      },
+      {'currentLat': lat, 'currentLng': lng, 'speedKmh': speed},
       where: 'id = ?',
       whereArgs: [agentId],
     );
@@ -75,13 +77,23 @@ class DispatchRepositoryImpl implements DispatchRepository {
       where: 'id = ?',
       whereArgs: [taskId],
     );
-    final maps = await db.query('dispatch_tasks', where: 'id = ?', whereArgs: [taskId]);
+    final maps = await db.query(
+      'dispatch_tasks',
+      where: 'id = ?',
+      whereArgs: [taskId],
+    );
     return _mapToDispatchTask(maps.first);
   }
 
   FieldAgent _mapToFieldAgent(Map<String, dynamic> map) {
-    final rawCoords = jsonDecode(map['routeCoordinates'] as String) as List<dynamic>;
-    final coords = rawCoords.map((e) => (e as List<dynamic>).map((c) => (c as num).toDouble()).toList()).toList();
+    final rawCoords =
+        jsonDecode(map['routeCoordinates'] as String) as List<dynamic>;
+    final coords = rawCoords
+        .map(
+          (e) =>
+              (e as List<dynamic>).map((c) => (c as num).toDouble()).toList(),
+        )
+        .toList();
 
     return FieldAgent(
       id: map['id'] as String,

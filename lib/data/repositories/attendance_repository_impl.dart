@@ -1,4 +1,5 @@
 import 'package:uuid/uuid.dart';
+
 import '../../domain/entities/attendance_record.dart';
 import '../../domain/entities/leave_request.dart';
 import '../../domain/repositories/attendance_repository.dart';
@@ -76,7 +77,11 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
   @override
   Future<AttendanceRecord> toggleBreak({required String recordId}) async {
     final db = await _db.database;
-    final maps = await db.query('attendance', where: 'id = ?', whereArgs: [recordId]);
+    final maps = await db.query(
+      'attendance',
+      where: 'id = ?',
+      whereArgs: [recordId],
+    );
     if (maps.isEmpty) throw Exception('Attendance record not found');
 
     final current = _mapToAttendance(maps.first);
@@ -95,7 +100,11 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
   @override
   Future<AttendanceRecord> clockOut({required String recordId}) async {
     final db = await _db.database;
-    final maps = await db.query('attendance', where: 'id = ?', whereArgs: [recordId]);
+    final maps = await db.query(
+      'attendance',
+      where: 'id = ?',
+      whereArgs: [recordId],
+    );
     if (maps.isEmpty) throw Exception('Attendance record not found');
 
     final current = _mapToAttendance(maps.first);
@@ -151,17 +160,22 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
     String? approverComment,
   }) async {
     final db = await _db.database;
+    final values = <String, Object?>{'status': status};
+    if (approverComment != null) {
+      values['approverComment'] = approverComment;
+    }
     await db.update(
       'leave_requests',
-      {
-        'status': status,
-        if (approverComment != null) 'approverComment': approverComment,
-      },
+      values,
       where: 'id = ?',
       whereArgs: [requestId],
     );
 
-    final maps = await db.query('leave_requests', where: 'id = ?', whereArgs: [requestId]);
+    final maps = await db.query(
+      'leave_requests',
+      where: 'id = ?',
+      whereArgs: [requestId],
+    );
     return _mapToLeaveRequest(maps.first);
   }
 
@@ -171,7 +185,9 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
       employeeId: map['employeeId'] as String,
       employeeName: map['employeeName'] as String,
       checkInTime: DateTime.parse(map['checkInTime'] as String),
-      checkOutTime: map['checkOutTime'] != null ? DateTime.parse(map['checkOutTime'] as String) : null,
+      checkOutTime: map['checkOutTime'] != null
+          ? DateTime.parse(map['checkOutTime'] as String)
+          : null,
       durationSeconds: map['durationSeconds'] as int,
       status: map['status'] as String,
       isWithinGeofence: (map['isWithinGeofence'] as int) == 1,

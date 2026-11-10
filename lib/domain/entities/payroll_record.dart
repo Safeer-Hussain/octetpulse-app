@@ -64,7 +64,8 @@ class PayrollRecord extends Equatable {
       baseSalaryUsd: baseSalaryUsd ?? this.baseSalaryUsd,
       sprintBonusUsd: sprintBonusUsd ?? this.sprintBonusUsd,
       overtimeHours: overtimeHours ?? this.overtimeHours,
-      overtimeRateMultiplier: overtimeRateMultiplier ?? this.overtimeRateMultiplier,
+      overtimeRateMultiplier:
+          overtimeRateMultiplier ?? this.overtimeRateMultiplier,
       overtimePayUsd: overtimePayUsd ?? this.overtimePayUsd,
       incomeTaxUsd: incomeTaxUsd ?? this.incomeTaxUsd,
       providentFundUsd: providentFundUsd ?? this.providentFundUsd,
@@ -77,21 +78,21 @@ class PayrollRecord extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        employeeId,
-        employeeName,
-        department,
-        role,
-        baseSalaryUsd,
-        sprintBonusUsd,
-        overtimeHours,
-        overtimeRateMultiplier,
-        overtimePayUsd,
-        incomeTaxUsd,
-        providentFundUsd,
-        netPayableUsd,
-        status,
-        disbursedAt,
-        monthYear,
-      ];
+    id,
+    employeeId,
+    employeeName,
+    department,
+    role,
+    baseSalaryUsd,
+    sprintBonusUsd,
+    overtimeHours,
+    overtimeRateMultiplier,
+    overtimePayUsd,
+    incomeTaxUsd,
+    providentFundUsd,
+    netPayableUsd,
+    status,
+    disbursedAt,
+    monthYear,
+  ];
 }

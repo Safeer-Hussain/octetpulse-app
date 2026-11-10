@@ -33,7 +33,9 @@ class VoipTelemetry extends Equatable {
 
   factory VoipTelemetry.fromMap(Map<dynamic, dynamic> map) {
     final rawWaveforms = map['waveforms'] as List<dynamic>? ?? [];
-    final waveformsList = rawWaveforms.map((e) => (e as num).toDouble()).toList();
+    final waveformsList = rawWaveforms
+        .map((e) => (e as num).toDouble())
+        .toList();
 
     return VoipTelemetry(
       isActive: map['isActive'] as bool? ?? false,
@@ -48,7 +50,8 @@ class VoipTelemetry extends Equatable {
       isMuted: map['isMuted'] as bool? ?? false,
       isSpeakerOn: map['isSpeakerOn'] as bool? ?? false,
       waveforms: waveformsList,
-      timestamp: map['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+      timestamp:
+          map['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch,
     );
   }
 
@@ -86,18 +89,18 @@ class VoipTelemetry extends Equatable {
 
   @override
   List<Object?> get props => [
-        isActive,
-        callId,
-        callDurationSec,
-        bitrateKbps,
-        packetLossPercent,
-        jitterMs,
-        mosScore,
-        cipher,
-        audioCodec,
-        isMuted,
-        isSpeakerOn,
-        waveforms,
-        timestamp,
-      ];
+    isActive,
+    callId,
+    callDurationSec,
+    bitrateKbps,
+    packetLossPercent,
+    jitterMs,
+    mosScore,
+    cipher,
+    audioCodec,
+    isMuted,
+    isSpeakerOn,
+    waveforms,
+    timestamp,
+  ];
 }

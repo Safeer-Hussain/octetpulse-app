@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 import '../../../domain/entities/payroll_record.dart';
 
 enum PayrollStatusState { initial, loading, loaded, error }
@@ -37,8 +38,7 @@ class PayrollState extends Equatable {
 
   int get disbursedCount =>
       records.where((r) => r.status == 'Disbursed').length;
-  int get pendingCount =>
-      records.where((r) => r.status == 'Pending').length;
+  int get pendingCount => records.where((r) => r.status == 'Pending').length;
 
   PayrollState copyWith({
     PayrollStatusState? status,
@@ -53,7 +53,9 @@ class PayrollState extends Equatable {
     return PayrollState(
       status: status ?? this.status,
       records: records ?? this.records,
-      selectedRecord: clearSelectedRecord ? null : (selectedRecord ?? this.selectedRecord),
+      selectedRecord: clearSelectedRecord
+          ? null
+          : (selectedRecord ?? this.selectedRecord),
       isUsd: isUsd ?? this.isUsd,
       currentMonthYear: currentMonthYear ?? this.currentMonthYear,
       feedbackMessage: feedbackMessage,
@@ -63,12 +65,12 @@ class PayrollState extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        records,
-        selectedRecord,
-        isUsd,
-        currentMonthYear,
-        feedbackMessage,
-        errorMessage,
-      ];
+    status,
+    records,
+    selectedRecord,
+    isUsd,
+    currentMonthYear,
+    feedbackMessage,
+    errorMessage,
+  ];
 }

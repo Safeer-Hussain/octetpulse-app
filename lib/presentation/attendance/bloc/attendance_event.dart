@@ -30,13 +30,13 @@ class ClockInEvent extends AttendanceEvent {
 
   @override
   List<Object?> get props => [
-        employeeId,
-        employeeName,
-        latitude,
-        longitude,
-        isWithinGeofence,
-        geofenceDistanceMeters,
-      ];
+    employeeId,
+    employeeName,
+    latitude,
+    longitude,
+    isWithinGeofence,
+    geofenceDistanceMeters,
+  ];
 }
 
 class ToggleBreakEvent extends AttendanceEvent {
@@ -63,7 +63,13 @@ class SubmitLeaveRequestEvent extends AttendanceEvent {
   });
 
   @override
-  List<Object?> get props => [employeeId, employeeName, requestType, hours, reason];
+  List<Object?> get props => [
+    employeeId,
+    employeeName,
+    requestType,
+    hours,
+    reason,
+  ];
 }
 
 class ApproveLeaveRequestEvent extends AttendanceEvent {
@@ -85,7 +91,10 @@ class UpdateGeofencePositionEvent extends AttendanceEvent {
   final double latitude;
   final double longitude;
 
-  const UpdateGeofencePositionEvent({required this.latitude, required this.longitude});
+  const UpdateGeofencePositionEvent({
+    required this.latitude,
+    required this.longitude,
+  });
 
   @override
   List<Object?> get props => [latitude, longitude];

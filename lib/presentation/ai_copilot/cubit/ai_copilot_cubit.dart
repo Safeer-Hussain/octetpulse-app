@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+
 import '../../../data/datasources/local/app_database.dart';
 import 'ai_copilot_state.dart';
 
@@ -8,17 +9,18 @@ class AiCopilotCubit extends Cubit<AiCopilotState> {
   final Uuid _uuid = const Uuid();
 
   AiCopilotCubit(this._db)
-      : super(AiCopilotState(
+    : super(
+        AiCopilotState(
           messages: [
             CopilotMessage(
               id: 'init-msg',
               role: 'assistant',
-              content:
-                  'OctetPulse Enterprise Intelligence Engine initialized. I have live access to your SQLite workforce attendance, automated payroll ledger, and field dispatch SLA tracking. Select a prompt chip below or type an executive inquiry.',
+              content: 'OctetPulse Enterprise Intelligence Engine initialized. I have live access to your SQLite workforce attendance, automated payroll ledger, and field dispatch SLA tracking. Select a prompt chip below or type an executive inquiry.',
               timestamp: DateTime.now(),
             ),
           ],
-        ));
+        ),
+      );
 
   Future<void> sendPrompt(String promptText) async {
     if (state.isStreaming || promptText.trim().isEmpty) return;
@@ -31,23 +33,53 @@ class AiCopilotCubit extends Cubit<AiCopilotState> {
     );
 
     final updatedWithUser = [...state.messages, userMsg];
-    emit(state.copyWith(
-      messages: updatedWithUser,
-      isStreaming: true,
-      streamingStatusText: 'Auditing workforce attendance, payroll burn & SLA metrics...',
-    ));
+    emit(
+      state.copyWith(
+        messages: updatedWithUser,
+        isStreaming: true,
+        streamingStatusText:
+            'Auditing workforce attendance, payroll burn & SLA metrics...',
+      ),
+    );
 
     try {
       // Live audit from local SQLite
       final db = await _db.database;
-      final employeesCount = (await db.rawQuery('SELECT COUNT(*) FROM employees')).first.values.first as int? ?? 0;
-      final pendingLeaves = (await db.rawQuery("SELECT COUNT(*) FROM leave_requests WHERE status = 'Pending'")).first.values.first as int? ?? 0;
-      final payrollSummary = await db.rawQuery("SELECT SUM(baseSalaryUsd), SUM(overtimePayUsd), SUM(netPayableUsd), COUNT(*) FROM payroll WHERE status = 'Pending'");
-      final activeTasks = (await db.rawQuery("SELECT COUNT(*) FROM dispatch_tasks WHERE status = 'In Transit'")).first.values.first as int? ?? 0;
+      final employeesCount =
+          (await db.rawQuery('SELECT COUNT(*) FROM employees'))
+                  .first
+                  .values
+                  .first
+              as int? ??
+          0;
+      final pendingLeaves =
+          (await db.rawQuery(
+                "SELECT COUNT(*) FROM leave_requests WHERE status = 'Pending'",
+              )).first.values.first
+              as int? ??
+          0;
+      final payrollSummary = await db.rawQuery(
+        "SELECT SUM(baseSalaryUsd), SUM(overtimePayUsd), SUM(netPayableUsd), COUNT(*) FROM payroll WHERE status = 'Pending'",
+      );
+      final activeTasks =
+          (await db.rawQuery(
+                "SELECT COUNT(*) FROM dispatch_tasks WHERE status = 'In Transit'",
+              )).first.values.first
+              as int? ??
+          0;
 
-      final pendingDisburseCount = payrollSummary.isNotEmpty ? (payrollSummary.first['COUNT(*)'] as int? ?? 0) : 0;
-      final totalNetBurn = payrollSummary.isNotEmpty ? ((payrollSummary.first['SUM(netPayableUsd)'] as num?)?.toDouble() ?? 0.0) : 0.0;
-      final totalOtBurn = payrollSummary.isNotEmpty ? ((payrollSummary.first['SUM(overtimePayUsd)'] as num?)?.toDouble() ?? 0.0) : 0.0;
+      final pendingDisburseCount = payrollSummary.isNotEmpty
+          ? (payrollSummary.first['COUNT(*)'] as int? ?? 0)
+          : 0;
+      final totalNetBurn = payrollSummary.isNotEmpty
+          ? ((payrollSummary.first['SUM(netPayableUsd)'] as num?)?.toDouble() ??
+                0.0)
+          : 0.0;
+      final totalOtBurn = payrollSummary.isNotEmpty
+          ? ((payrollSummary.first['SUM(overtimePayUsd)'] as num?)
+                    ?.toDouble() ??
+                0.0)
+          : 0.0;
 
       final responseText = _synthesizeResponse(
         prompt: promptText,
@@ -76,10 +108,7 @@ class AiCopilotCubit extends Cubit<AiCopilotState> {
         );
 
         final updatedList = [...updatedWithUser, streamMsg];
-        emit(state.copyWith(
-          messages: updatedList,
-          clearStatusText: i > 2,
-        ));
+        emit(state.copyWith(messages: updatedList, clearStatusText: i > 2));
 
         await Future<void>.delayed(const Duration(milliseconds: 28));
       }
@@ -87,33 +116,30 @@ class AiCopilotCubit extends Cubit<AiCopilotState> {
       final errorMsg = CopilotMessage(
         id: _uuid.v4(),
         role: 'assistant',
-        content: 'Audit query encountered an issue: $e. Please verify local ledger state.',
+        content:
+            'Audit query encountered an issue: $e. Please verify local ledger state.',
         timestamp: DateTime.now(),
       );
-      emit(state.copyWith(
-        messages: [...state.messages, errorMsg],
-      ));
+      emit(state.copyWith(messages: [...state.messages, errorMsg]));
     } finally {
       // Guarantees isStreaming is reset to false
-      emit(state.copyWith(
-        isStreaming: false,
-        clearStatusText: true,
-      ));
+      emit(state.copyWith(isStreaming: false, clearStatusText: true));
     }
   }
 
   void clearConversation() {
-    emit(AiCopilotState(
-      messages: [
-        CopilotMessage(
-          id: 'init-msg',
-          role: 'assistant',
-          content:
-              'Operations transcript cleared. Ready for the next workforce governance or SLA audit inquiry.',
-          timestamp: DateTime.now(),
-        ),
-      ],
-    ));
+    emit(
+      AiCopilotState(
+        messages: [
+          CopilotMessage(
+            id: 'init-msg',
+            role: 'assistant',
+            content: 'Operations transcript cleared. Ready for the next workforce governance or SLA audit inquiry.',
+            timestamp: DateTime.now(),
+          ),
+        ],
+      ),
+    );
   }
 
   String _synthesizeResponse({
@@ -127,7 +153,9 @@ class AiCopilotCubit extends Cubit<AiCopilotState> {
   }) {
     final lower = prompt.toLowerCase();
 
-    if (lower.contains('payroll') || lower.contains('variance') || lower.contains('burn')) {
+    if (lower.contains('payroll') ||
+        lower.contains('variance') ||
+        lower.contains('burn')) {
       return 'EXECUTIVE PAYROLL AUDIT:\n\n'
           '• Total Active Headcount: $employeesCount corporate engineers and field leads.\n'
           '• Pending Disbursement Volume: $pendingPayrollCount records totaling \$${totalNetBurn.toStringAsFixed(2)} net.\n'
@@ -136,7 +164,9 @@ class AiCopilotCubit extends Cubit<AiCopilotState> {
           '• Recommendation: Authorize monthly batch disbursement to maintain sprint velocity and clear outstanding liabilities.';
     }
 
-    if (lower.contains('dispatch') || lower.contains('bottleneck') || lower.contains('fleet')) {
+    if (lower.contains('dispatch') ||
+        lower.contains('bottleneck') ||
+        lower.contains('fleet')) {
       return 'FIELD DISPATCH & SLA AUDIT:\n\n'
           '• Active Fleet Corridors: $activeTasks tasks currently marked "In Transit" across Lahore Gulberg and DHA Phase 5 corridors.\n'
           '• Mean Transit Speed: Field units averaging 38.6 km/h under optimal traffic conditions.\n'
@@ -145,7 +175,9 @@ class AiCopilotCubit extends Cubit<AiCopilotState> {
           '• Recommendation: Maintain real-time GPS telemetry streaming and re-route emergency backup if ETA exceeds 25 minutes.';
     }
 
-    if (lower.contains('governance') || lower.contains('sprint') || lower.contains('summary')) {
+    if (lower.contains('governance') ||
+        lower.contains('sprint') ||
+        lower.contains('summary')) {
       return 'SPRINT WORKFORCE GOVERNANCE REPORT:\n\n'
           '• Workforce Utilization: 94.2% operational availability across Mobile Engineering, Cloud Infra, and Security.\n'
           '• Pending Approvals: $pendingLeaves pending leave/overtime requests awaiting Team Lead clearance in the cockpit.\n'

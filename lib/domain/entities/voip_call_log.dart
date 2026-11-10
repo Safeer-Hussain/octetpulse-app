@@ -27,15 +27,15 @@ class VoipCallLog extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        calleeId,
-        calleeName,
-        calleeRole,
-        callType,
-        durationSeconds,
-        timestamp,
-        cipher,
-        audioCodec,
-        mosScore,
-      ];
+    id,
+    calleeId,
+    calleeName,
+    calleeRole,
+    callType,
+    durationSeconds,
+    timestamp,
+    cipher,
+    audioCodec,
+    mosScore,
+  ];
 }

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/attendance_record.dart';
 import '../../../domain/entities/leave_request.dart';
@@ -30,8 +31,10 @@ class AttendanceState extends Equatable {
     this.feedbackMessage,
   });
 
-  bool get isClockedIn => currentRecord != null && currentRecord!.status == 'Clocked In';
-  bool get isOnBreak => currentRecord != null && currentRecord!.status == 'On Break';
+  bool get isClockedIn =>
+      currentRecord != null && currentRecord!.status == 'Clocked In';
+  bool get isOnBreak =>
+      currentRecord != null && currentRecord!.status == 'On Break';
 
   List<LeaveRequest> get pendingLeaveRequests =>
       leaveRequests.where((req) => req.status == 'Pending').toList();
@@ -51,13 +54,16 @@ class AttendanceState extends Equatable {
   }) {
     return AttendanceState(
       status: status ?? this.status,
-      currentRecord: clearCurrentRecord ? null : (currentRecord ?? this.currentRecord),
+      currentRecord: clearCurrentRecord
+          ? null
+          : (currentRecord ?? this.currentRecord),
       history: history ?? this.history,
       leaveRequests: leaveRequests ?? this.leaveRequests,
       currentLatitude: currentLatitude ?? this.currentLatitude,
       currentLongitude: currentLongitude ?? this.currentLongitude,
       isWithinGeofence: isWithinGeofence ?? this.isWithinGeofence,
-      geofenceDistanceMeters: geofenceDistanceMeters ?? this.geofenceDistanceMeters,
+      geofenceDistanceMeters:
+          geofenceDistanceMeters ?? this.geofenceDistanceMeters,
       errorMessage: errorMessage,
       feedbackMessage: feedbackMessage,
     );
@@ -65,15 +71,15 @@ class AttendanceState extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        currentRecord,
-        history,
-        leaveRequests,
-        currentLatitude,
-        currentLongitude,
-        isWithinGeofence,
-        geofenceDistanceMeters,
-        errorMessage,
-        feedbackMessage,
-      ];
+    status,
+    currentRecord,
+    history,
+    leaveRequests,
+    currentLatitude,
+    currentLongitude,
+    isWithinGeofence,
+    geofenceDistanceMeters,
+    errorMessage,
+    feedbackMessage,
+  ];
 }

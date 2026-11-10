@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 import '../../../domain/entities/dispatch_task.dart';
 import '../../../domain/entities/field_agent.dart';
 
@@ -26,7 +27,9 @@ class DispatchState extends Equatable {
   });
 
   DispatchTask? get selectedAgentTask {
-    if (selectedAgent == null || selectedAgent!.activeTaskId == null) return null;
+    if (selectedAgent == null || selectedAgent!.activeTaskId == null) {
+      return null;
+    }
     try {
       return tasks.firstWhere((t) => t.id == selectedAgent!.activeTaskId);
     } catch (_) {
@@ -49,7 +52,9 @@ class DispatchState extends Equatable {
       status: status ?? this.status,
       agents: agents ?? this.agents,
       tasks: tasks ?? this.tasks,
-      selectedAgent: clearSelectedAgent ? null : (selectedAgent ?? this.selectedAgent),
+      selectedAgent: clearSelectedAgent
+          ? null
+          : (selectedAgent ?? this.selectedAgent),
       isSimulatingMovement: isSimulatingMovement ?? this.isSimulatingMovement,
       simulationStep: simulationStep ?? this.simulationStep,
       feedbackMessage: feedbackMessage,
@@ -59,13 +64,13 @@ class DispatchState extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        agents,
-        tasks,
-        selectedAgent,
-        isSimulatingMovement,
-        simulationStep,
-        feedbackMessage,
-        errorMessage,
-      ];
+    status,
+    agents,
+    tasks,
+    selectedAgent,
+    isSimulatingMovement,
+    simulationStep,
+    feedbackMessage,
+    errorMessage,
+  ];
 }
