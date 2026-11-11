@@ -4,16 +4,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../domain/entities/geofence_zone.dart';
 import '../../../domain/entities/leave_request.dart';
 import '../../../domain/repositories/attendance_repository.dart';
+import '../../../domain/repositories/geofence_repository.dart';
 import 'attendance_event.dart';
 import 'attendance_state.dart';
 
 class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
   final AttendanceRepository _repository;
+  final GeofenceRepository? _geofenceRepository;
   final Uuid _uuid = const Uuid();
 
-  AttendanceBloc(this._repository) : super(const AttendanceState()) {
+  AttendanceBloc(this._repository, [this._geofenceRepository])
+    : super(const AttendanceState()) {
     on<LoadAttendanceData>(_onLoadAttendanceData);
     on<ClockInEvent>(_onClockIn);
     on<ToggleBreakEvent>(_onToggleBreak);
@@ -32,6 +36,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       final latest = await _repository.getLatestAttendanceRecord();
       final history = await _repository.getAttendanceHistory();
       final leaveRequests = await _repository.getLeaveRequests();
+      final activeZone = await _geofenceRepository?.getActiveGeofenceZone();
 
       final isCurrentActive =
           latest != null &&
@@ -43,6 +48,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
           currentRecord: isCurrentActive ? latest : null,
           history: history,
           leaveRequests: leaveRequests,
+          activeGeofenceZone: activeZone,
         ),
       );
     } catch (e) {
@@ -193,17 +199,33 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     }
   }
 
-  void _onUpdateGeofencePosition(
+  Future<void> _onUpdateGeofencePosition(
     UpdateGeofencePositionEvent event,
     Emitter<AttendanceState> emit,
-  ) {
-    final distance = _calculateDistanceMeters(
-      event.latitude,
-      event.longitude,
-      AppConstants.hqLatitude,
-      AppConstants.hqLongitude,
-    );
-    final isWithin = distance <= AppConstants.hqGeofenceRadiusMeters;
+  ) async {
+    GeofenceZone? activeZone = state.activeGeofenceZone;
+    if (activeZone == null && _geofenceRepository != null) {
+      activeZone = await _geofenceRepository.getActiveGeofenceZone();
+    }
+
+    bool isWithin;
+    double distance;
+
+    if (activeZone != null && activeZone.vertices.length >= 3) {
+      isWithin = activeZone.containsPoint(event.latitude, event.longitude);
+      distance = activeZone.distanceToBoundaryMeters(
+        event.latitude,
+        event.longitude,
+      );
+    } else {
+      distance = _calculateDistanceMeters(
+        event.latitude,
+        event.longitude,
+        AppConstants.hqLatitude,
+        AppConstants.hqLongitude,
+      );
+      isWithin = distance <= AppConstants.hqGeofenceRadiusMeters;
+    }
 
     emit(
       state.copyWith(
@@ -211,6 +233,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
         currentLongitude: event.longitude,
         geofenceDistanceMeters: distance,
         isWithinGeofence: isWithin,
+        activeGeofenceZone: activeZone,
       ),
     );
   }

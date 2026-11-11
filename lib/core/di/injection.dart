@@ -5,10 +5,12 @@ import '../../data/datasources/local/app_database.dart';
 import '../../data/datasources/native/voip_native_bridge.dart';
 import '../../data/repositories/attendance_repository_impl.dart';
 import '../../data/repositories/dispatch_repository_impl.dart';
+import '../../data/repositories/geofence_repository_impl.dart';
 import '../../data/repositories/payroll_repository_impl.dart';
 import '../../data/repositories/voip_repository_impl.dart';
 import '../../domain/repositories/attendance_repository.dart';
 import '../../domain/repositories/dispatch_repository.dart';
+import '../../domain/repositories/geofence_repository.dart';
 import '../../domain/repositories/payroll_repository.dart';
 import '../../domain/repositories/voip_repository.dart';
 import '../../presentation/ai_copilot/cubit/ai_copilot_cubit.dart';
@@ -53,6 +55,12 @@ Future<void> initDependencies({SharedPreferences? prefs}) async {
     );
   }
 
+  if (!getIt.isRegistered<GeofenceRepository>()) {
+    getIt.registerLazySingleton<GeofenceRepository>(
+      () => GeofenceRepositoryImpl(getIt<AppDatabase>()),
+    );
+  }
+
   if (!getIt.isRegistered<VoipRepository>()) {
     getIt.registerLazySingleton<VoipRepository>(
       () => VoipRepositoryImpl(getIt<AppDatabase>(), getIt<VoipNativeBridge>()),
@@ -71,7 +79,10 @@ Future<void> initDependencies({SharedPreferences? prefs}) async {
 
   if (!getIt.isRegistered<AttendanceBloc>()) {
     getIt.registerFactory<AttendanceBloc>(
-      () => AttendanceBloc(getIt<AttendanceRepository>()),
+      () => AttendanceBloc(
+        getIt<AttendanceRepository>(),
+        getIt<GeofenceRepository>(),
+      ),
     );
   }
 
@@ -83,7 +94,10 @@ Future<void> initDependencies({SharedPreferences? prefs}) async {
 
   if (!getIt.isRegistered<DispatchBloc>()) {
     getIt.registerFactory<DispatchBloc>(
-      () => DispatchBloc(getIt<DispatchRepository>()),
+      () => DispatchBloc(
+        getIt<DispatchRepository>(),
+        getIt<GeofenceRepository>(),
+      ),
     );
   }
 

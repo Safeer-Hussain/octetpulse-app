@@ -76,3 +76,66 @@ class UpdateTaskStatusEvent extends DispatchEvent {
   @override
   List<Object?> get props => [taskId, status];
 }
+
+class TogglePolygonEditorEvent extends DispatchEvent {
+  final bool? forceState;
+
+  const TogglePolygonEditorEvent({this.forceState});
+
+  @override
+  List<Object?> get props => [forceState];
+}
+
+class AddPolygonVertexEvent extends DispatchEvent {
+  final double latitude;
+  final double longitude;
+
+  const AddPolygonVertexEvent({
+    required this.latitude,
+    required this.longitude,
+  });
+
+  @override
+  List<Object?> get props => [latitude, longitude];
+}
+
+class UndoPolygonVertexEvent extends DispatchEvent {
+  const UndoPolygonVertexEvent();
+}
+
+class ClearPolygonDraftEvent extends DispatchEvent {
+  const ClearPolygonDraftEvent();
+}
+
+class SavePolygonZoneEvent extends DispatchEvent {
+  final String name;
+  final String description;
+  final String colorHex;
+
+  const SavePolygonZoneEvent({
+    required this.name,
+    required this.description,
+    this.colorHex = '#1E88E5',
+  });
+
+  @override
+  List<Object?> get props => [name, description, colorHex];
+}
+
+class SetActiveGeofenceZoneEvent extends DispatchEvent {
+  final String zoneId;
+
+  const SetActiveGeofenceZoneEvent({required this.zoneId});
+
+  @override
+  List<Object?> get props => [zoneId];
+}
+
+class DeleteGeofenceZoneEvent extends DispatchEvent {
+  final String zoneId;
+
+  const DeleteGeofenceZoneEvent({required this.zoneId});
+
+  @override
+  List<Object?> get props => [zoneId];
+}

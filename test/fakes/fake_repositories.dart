@@ -4,12 +4,14 @@ import 'package:octet_pulse_app/domain/entities/attendance_record.dart';
 import 'package:octet_pulse_app/domain/entities/dispatch_task.dart';
 import 'package:octet_pulse_app/domain/entities/employee.dart';
 import 'package:octet_pulse_app/domain/entities/field_agent.dart';
+import 'package:octet_pulse_app/domain/entities/geofence_zone.dart';
 import 'package:octet_pulse_app/domain/entities/leave_request.dart';
 import 'package:octet_pulse_app/domain/entities/payroll_record.dart';
 import 'package:octet_pulse_app/domain/entities/voip_call_log.dart';
 import 'package:octet_pulse_app/domain/entities/voip_telemetry.dart';
 import 'package:octet_pulse_app/domain/repositories/attendance_repository.dart';
 import 'package:octet_pulse_app/domain/repositories/dispatch_repository.dart';
+import 'package:octet_pulse_app/domain/repositories/geofence_repository.dart';
 import 'package:octet_pulse_app/domain/repositories/payroll_repository.dart';
 import 'package:octet_pulse_app/domain/repositories/voip_repository.dart';
 
@@ -212,5 +214,44 @@ class FakeDispatchRepository implements DispatchRepository {
     final updated = tasks[idx].copyWith(status: status);
     tasks[idx] = updated;
     return updated;
+  }
+}
+
+class FakeGeofenceRepository implements GeofenceRepository {
+  List<GeofenceZone> zones = [];
+
+  @override
+  Future<List<GeofenceZone>> getGeofenceZones() async => zones;
+
+  @override
+  Future<GeofenceZone?> getActiveGeofenceZone() async {
+    final matches = zones.where((z) => z.isActive);
+    return matches.isNotEmpty
+        ? matches.first
+        : (zones.isNotEmpty ? zones.first : null);
+  }
+
+  @override
+  Future<GeofenceZone> saveGeofenceZone(GeofenceZone zone) async {
+    if (zone.isActive) {
+      zones = zones.map((z) => z.copyWith(isActive: false)).toList();
+    }
+    final idx = zones.indexWhere((z) => z.id == zone.id);
+    if (idx >= 0) {
+      zones[idx] = zone;
+    } else {
+      zones.insert(0, zone);
+    }
+    return zone;
+  }
+
+  @override
+  Future<void> deleteGeofenceZone(String zoneId) async {
+    zones.removeWhere((z) => z.id == zoneId);
+  }
+
+  @override
+  Future<void> setActiveGeofenceZone(String zoneId) async {
+    zones = zones.map((z) => z.copyWith(isActive: z.id == zoneId)).toList();
   }
 }

@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../domain/entities/dispatch_task.dart';
 import '../../../domain/entities/field_agent.dart';
+import '../../../domain/entities/geofence_zone.dart';
 
 enum DispatchStatusState { initial, loading, loaded, error }
 
@@ -12,6 +13,10 @@ class DispatchState extends Equatable {
   final FieldAgent? selectedAgent;
   final bool isSimulatingMovement;
   final int simulationStep;
+  final List<GeofenceZone> geofenceZones;
+  final GeofenceZone? activeGeofenceZone;
+  final bool isPolygonEditorActive;
+  final List<List<double>> draftPolygonVertices;
   final String? feedbackMessage;
   final String? errorMessage;
 
@@ -22,6 +27,10 @@ class DispatchState extends Equatable {
     this.selectedAgent,
     this.isSimulatingMovement = false,
     this.simulationStep = 0,
+    this.geofenceZones = const [],
+    this.activeGeofenceZone,
+    this.isPolygonEditorActive = false,
+    this.draftPolygonVertices = const [],
     this.feedbackMessage,
     this.errorMessage,
   });
@@ -37,6 +46,16 @@ class DispatchState extends Equatable {
     }
   }
 
+  bool isAgentInsideActiveGeofence(FieldAgent agent) {
+    if (activeGeofenceZone == null || activeGeofenceZone!.vertices.length < 3) {
+      return true;
+    }
+    return activeGeofenceZone!.containsPoint(
+      agent.currentLat,
+      agent.currentLng,
+    );
+  }
+
   DispatchState copyWith({
     DispatchStatusState? status,
     List<FieldAgent>? agents,
@@ -45,6 +64,11 @@ class DispatchState extends Equatable {
     bool clearSelectedAgent = false,
     bool? isSimulatingMovement,
     int? simulationStep,
+    List<GeofenceZone>? geofenceZones,
+    GeofenceZone? activeGeofenceZone,
+    bool clearActiveGeofenceZone = false,
+    bool? isPolygonEditorActive,
+    List<List<double>>? draftPolygonVertices,
     String? feedbackMessage,
     String? errorMessage,
   }) {
@@ -57,6 +81,13 @@ class DispatchState extends Equatable {
           : (selectedAgent ?? this.selectedAgent),
       isSimulatingMovement: isSimulatingMovement ?? this.isSimulatingMovement,
       simulationStep: simulationStep ?? this.simulationStep,
+      geofenceZones: geofenceZones ?? this.geofenceZones,
+      activeGeofenceZone: clearActiveGeofenceZone
+          ? null
+          : (activeGeofenceZone ?? this.activeGeofenceZone),
+      isPolygonEditorActive:
+          isPolygonEditorActive ?? this.isPolygonEditorActive,
+      draftPolygonVertices: draftPolygonVertices ?? this.draftPolygonVertices,
       feedbackMessage: feedbackMessage,
       errorMessage: errorMessage,
     );
@@ -70,6 +101,10 @@ class DispatchState extends Equatable {
     selectedAgent,
     isSimulatingMovement,
     simulationStep,
+    geofenceZones,
+    activeGeofenceZone,
+    isPolygonEditorActive,
+    draftPolygonVertices,
     feedbackMessage,
     errorMessage,
   ];

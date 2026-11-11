@@ -49,6 +49,279 @@ class _FieldTrackerViewState extends State<FieldTrackerView> {
     );
   }
 
+  void _showSavePolygonDialog(BuildContext context, DispatchState state) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final nameCtrl = TextEditingController(
+      text: 'Campus Zone ${state.geofenceZones.length + 1}',
+    );
+    final descCtrl = TextEditingController(
+      text:
+          'Corporate facility boundary with ${state.draftPolygonVertices.length} perimeter vertices.',
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: colorScheme.surface,
+        title: Text(
+          'Save Geofence Polygon Zone',
+          style: TextStyle(
+            color: colorScheme.onSurface,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Define metadata for this ${state.draftPolygonVertices.length}-point perimeter boundary.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: nameCtrl,
+                decoration: InputDecoration(
+                  labelText: 'Campus Zone Name',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: descCtrl,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: 'Zone Description',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final name = nameCtrl.text.trim();
+              final desc = descCtrl.text.trim();
+              if (name.isNotEmpty) {
+                context.read<DispatchBloc>().add(
+                  SavePolygonZoneEvent(name: name, description: desc),
+                );
+              }
+              Navigator.of(dialogCtx).pop();
+            },
+            child: const Text('Save Zone'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showZonesManagerModal(BuildContext context, DispatchState state) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (modalCtx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.layers, color: colorScheme.primary, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Campus Geofence Zones (${state.geofenceZones.length})',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () => Navigator.of(modalCtx).pop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Select an active polygon zone to enforce containment boundaries across workforce attendance and field tracking.',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: state.geofenceZones.length,
+                  separatorBuilder: (_, _) =>
+                      Divider(color: colorScheme.outlineVariant, height: 12),
+                  itemBuilder: (ctx, idx) {
+                    final zone = state.geofenceZones[idx];
+                    final isActive = zone.id == state.activeGeofenceZone?.id;
+
+                    return Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? colorScheme.primaryContainer.withValues(
+                                alpha: 0.25,
+                              )
+                            : colorScheme.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isActive
+                              ? colorScheme.primary
+                              : colorScheme.outlineVariant,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      zone.name,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    if (isActive) ...[
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: colorScheme.secondaryContainer,
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'ACTIVE',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                            color: colorScheme
+                                                .onSecondaryContainer,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${zone.vertices.length} vertices • ${(zone.areaSquareMeters / 10000).toStringAsFixed(2)} ha • ${zone.description}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          if (!isActive)
+                            FilledButton.tonal(
+                              onPressed: () {
+                                context.read<DispatchBloc>().add(
+                                  SetActiveGeofenceZoneEvent(zoneId: zone.id),
+                                );
+                                Navigator.of(modalCtx).pop();
+                              },
+                              style: FilledButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                              ),
+                              child: const Text('Set Active'),
+                            ),
+                          if (state.geofenceZones.length > 1)
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete_outline,
+                                size: 18,
+                                color: colorScheme.error,
+                              ),
+                              onPressed: () {
+                                context.read<DispatchBloc>().add(
+                                  DeleteGeofenceZoneEvent(zoneId: zone.id),
+                                );
+                                Navigator.of(modalCtx).pop();
+                              },
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(modalCtx).pop();
+                  context.read<DispatchBloc>().add(
+                    const TogglePolygonEditorEvent(forceState: true),
+                  );
+                },
+                icon: const Icon(Icons.edit_location_alt, size: 16),
+                label: const Text('Draw New Campus Polygon'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<DispatchBloc, DispatchState>(
@@ -92,7 +365,7 @@ class _FieldTrackerViewState extends State<FieldTrackerView> {
   Widget _buildPortraitLayout(BuildContext context, DispatchState state) {
     return Column(
       children: [
-        SizedBox(height: 280, child: _buildMap(context, state)),
+        SizedBox(height: 300, child: _buildMap(context, state)),
         Expanded(
           child: SingleChildScrollView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -143,13 +416,14 @@ class _FieldTrackerViewState extends State<FieldTrackerView> {
 
   Widget _buildMap(BuildContext context, DispatchState state) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isEditor = state.isPolygonEditorActive;
 
     final markers = <Marker>[
-      // HQ Marker
+      // HQ Center Marker
       Marker(
         point: const LatLng(AppConstants.hqLatitude, AppConstants.hqLongitude),
-        width: 38,
-        height: 38,
+        width: 36,
+        height: 36,
         child: Container(
           decoration: BoxDecoration(
             color: colorScheme.primary,
@@ -165,16 +439,98 @@ class _FieldTrackerViewState extends State<FieldTrackerView> {
           child: Icon(
             Icons.corporate_fare,
             color: colorScheme.onPrimary,
-            size: 20,
+            size: 18,
           ),
         ),
       ),
     ];
 
     final polylines = <Polyline>[];
+    final polygons = <Polygon>[];
 
+    // Render configured geofence zones
+    for (final zone in state.geofenceZones) {
+      if (zone.vertices.length >= 3) {
+        final isActive = zone.id == state.activeGeofenceZone?.id;
+        final zonePoints = zone.vertices
+            .map((v) => LatLng(v[0], v[1]))
+            .toList();
+
+        polygons.add(
+          Polygon(
+            points: zonePoints,
+            color: isActive
+                ? colorScheme.primary.withValues(alpha: 0.18)
+                : colorScheme.outlineVariant.withValues(alpha: 0.08),
+            borderColor: isActive ? colorScheme.primary : colorScheme.outline,
+            borderStrokeWidth: isActive ? 2.5 : 1.2,
+          ),
+        );
+      }
+    }
+
+    // Render draft polygon if editor is active
+    if (isEditor && state.draftPolygonVertices.isNotEmpty) {
+      final draftPoints = state.draftPolygonVertices
+          .map((v) => LatLng(v[0], v[1]))
+          .toList();
+
+      // Connecting draft outline
+      if (draftPoints.length >= 2) {
+        polylines.add(
+          Polyline(
+            points: draftPoints,
+            strokeWidth: 3.0,
+            color: colorScheme.secondary,
+          ),
+        );
+      }
+
+      // Closed draft polygon preview
+      if (draftPoints.length >= 3) {
+        polygons.add(
+          Polygon(
+            points: draftPoints,
+            color: colorScheme.secondary.withValues(alpha: 0.22),
+            borderColor: colorScheme.secondary,
+            borderStrokeWidth: 2.0,
+          ),
+        );
+      }
+
+      // Vertex anchor markers
+      for (int i = 0; i < draftPoints.length; i++) {
+        markers.add(
+          Marker(
+            point: draftPoints[i],
+            width: 24,
+            height: 24,
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorScheme.secondary,
+                shape: BoxShape.circle,
+                border: Border.all(color: colorScheme.onSecondary, width: 2),
+              ),
+              child: Center(
+                child: Text(
+                  '${i + 1}',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSecondary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    // Render fleet agent markers and routes
     for (final agent in state.agents) {
       final isSelected = state.selectedAgent?.id == agent.id;
+      final isInside = state.isAgentInsideActiveGeofence(agent);
 
       markers.add(
         Marker(
@@ -193,12 +549,14 @@ class _FieldTrackerViewState extends State<FieldTrackerView> {
               decoration: BoxDecoration(
                 color: isSelected
                     ? colorScheme.secondary
-                    : colorScheme.surfaceContainerHighest,
+                    : (isInside
+                          ? colorScheme.primaryContainer
+                          : colorScheme.surfaceContainerHighest),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isSelected
                       ? colorScheme.onSecondary
-                      : colorScheme.primary,
+                      : (isInside ? colorScheme.primary : colorScheme.error),
                   width: 2.5,
                 ),
               ),
@@ -207,7 +565,9 @@ class _FieldTrackerViewState extends State<FieldTrackerView> {
                 size: 18,
                 color: isSelected
                     ? colorScheme.onSecondary
-                    : colorScheme.onSurface,
+                    : (isInside
+                          ? colorScheme.onPrimaryContainer
+                          : colorScheme.onSurface),
               ),
             ),
           ),
@@ -230,23 +590,205 @@ class _FieldTrackerViewState extends State<FieldTrackerView> {
       }
     }
 
-    return FlutterMap(
-      mapController: _mapController,
-      options: const MapOptions(
-        initialCenter: LatLng(
-          AppConstants.hqLatitude,
-          AppConstants.hqLongitude,
-        ),
-        initialZoom: 12.0,
-      ),
+    return Stack(
       children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.safeer.octetpulse',
+        FlutterMap(
+          mapController: _mapController,
+          options: MapOptions(
+            initialCenter: const LatLng(
+              AppConstants.hqLatitude,
+              AppConstants.hqLongitude,
+            ),
+            initialZoom: 12.0,
+            onTap: isEditor
+                ? (_, point) {
+                    context.read<DispatchBloc>().add(
+                      AddPolygonVertexEvent(
+                        latitude: point.latitude,
+                        longitude: point.longitude,
+                      ),
+                    );
+                  }
+                : null,
+          ),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.safeer.octetpulse',
+            ),
+            PolygonLayer(polygons: polygons),
+            PolylineLayer(polylines: polylines),
+            MarkerLayer(markers: markers),
+          ],
         ),
-        PolylineLayer(polylines: polylines),
-        MarkerLayer(markers: markers),
+
+        // Floating HUD Overlays
+        Positioned(
+          top: 10,
+          left: 10,
+          right: 10,
+          child: isEditor
+              ? _buildEditorHud(context, state)
+              : _buildStandardMapHud(context, state),
+        ),
       ],
+    );
+  }
+
+  Widget _buildStandardMapHud(BuildContext context, DispatchState state) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final active = state.activeGeofenceZone;
+
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: colorScheme.surface.withValues(alpha: 0.92),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: colorScheme.outlineVariant),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(alpha: 0.15),
+                  blurRadius: 6,
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.verified_user_outlined,
+                  size: 16,
+                  color: colorScheme.primary,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    active != null
+                        ? '${active.name} (${active.vertices.length}v)'
+                        : 'Default Circular Geofence Active',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 6),
+        IconButton.filledTonal(
+          tooltip: 'Manage Geofence Zones',
+          onPressed: () => _showZonesManagerModal(context, state),
+          icon: const Icon(Icons.layers, size: 18),
+        ),
+        const SizedBox(width: 4),
+        FilledButton.icon(
+          onPressed: () {
+            context.read<DispatchBloc>().add(
+              const TogglePolygonEditorEvent(forceState: true),
+            );
+          },
+          icon: const Icon(Icons.edit_location_alt, size: 16),
+          label: const Text('Draw Zone'),
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEditorHud(BuildContext context, DispatchState state) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final count = state.draftPolygonVertices.length;
+    final canSave = count >= 3;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorScheme.surface.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: colorScheme.secondary, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.2),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'POLYGON BOUNDARY EDITOR',
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.6,
+                    color: colorScheme.secondary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  '$count Vertices (Tap Map)',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Undo Vertex',
+            onPressed: count > 0
+                ? () => context.read<DispatchBloc>().add(
+                    const UndoPolygonVertexEvent(),
+                  )
+                : null,
+            icon: const Icon(Icons.undo, size: 18),
+          ),
+          IconButton(
+            tooltip: 'Clear Draft',
+            onPressed: count > 0
+                ? () => context.read<DispatchBloc>().add(
+                    const ClearPolygonDraftEvent(),
+                  )
+                : null,
+            icon: const Icon(Icons.delete_outline, size: 18),
+          ),
+          FilledButton.icon(
+            onPressed: canSave
+                ? () => _showSavePolygonDialog(context, state)
+                : null,
+            icon: const Icon(Icons.check, size: 16),
+            label: const Text('Save'),
+            style: FilledButton.styleFrom(
+              backgroundColor: colorScheme.secondary,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            ),
+          ),
+          const SizedBox(width: 2),
+          IconButton(
+            tooltip: 'Cancel Editor',
+            onPressed: () => context.read<DispatchBloc>().add(
+              const TogglePolygonEditorEvent(forceState: false),
+            ),
+            icon: const Icon(Icons.close, size: 18),
+          ),
+        ],
+      ),
     );
   }
 
@@ -257,6 +799,7 @@ class _FieldTrackerViewState extends State<FieldTrackerView> {
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final task = state.selectedAgentTask;
+    final isInside = state.isAgentInsideActiveGeofence(agent);
 
     return Card(
       color: colorScheme.surfaceContainer,
@@ -281,13 +824,42 @@ class _FieldTrackerViewState extends State<FieldTrackerView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        agent.name,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.onSurface,
-                        ),
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          Text(
+                            agent.name,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isInside
+                                  ? colorScheme.secondaryContainer
+                                  : colorScheme.errorContainer,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              isInside ? 'ON CAMPUS' : 'OFF SITE',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: isInside
+                                    ? colorScheme.onSecondaryContainer
+                                    : colorScheme.onErrorContainer,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       Text(
                         '${agent.id} • ${agent.role}',
@@ -362,40 +934,45 @@ class _FieldTrackerViewState extends State<FieldTrackerView> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Active Task: ${task.title} (${task.clientName})',
+                        'Task #${task.id}: ${task.title} (${task.priority})',
                         style: TextStyle(
                           fontSize: 11,
+                          fontWeight: FontWeight.w600,
                           color: colorScheme.onSurface,
                         ),
-                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      task.status,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.primary,
                       ),
                     ),
                   ],
                 ),
               ),
-            ],
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
+            ] else ...[
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
                 onPressed: () => _openAssignModal(context, agent),
                 icon: const Icon(Icons.add_task, size: 16),
-                label: const Text('Assign Dispatch Task'),
+                label: const Text('Assign New Task'),
               ),
-            ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMetric(BuildContext context, String label, String val) {
+  Widget _buildMetric(BuildContext context, String lbl, String val) {
     final colorScheme = Theme.of(context).colorScheme;
-
     return Column(
       children: [
         Text(
-          label,
+          lbl,
           style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 2),
@@ -420,8 +997,11 @@ class _FieldTrackerViewState extends State<FieldTrackerView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 4,
               children: [
                 Text(
                   'Active Field Units (${state.agents.length})',
@@ -453,6 +1033,7 @@ class _FieldTrackerViewState extends State<FieldTrackerView> {
               itemBuilder: (context, idx) {
                 final agent = state.agents[idx];
                 final isSelected = state.selectedAgent?.id == agent.id;
+                final isInside = state.isAgentInsideActiveGeofence(agent);
 
                 return InkWell(
                   onTap: () {
@@ -477,11 +1058,15 @@ class _FieldTrackerViewState extends State<FieldTrackerView> {
                       children: [
                         CircleAvatar(
                           radius: 16,
-                          backgroundColor: colorScheme.primaryContainer,
+                          backgroundColor: isInside
+                              ? colorScheme.primaryContainer
+                              : colorScheme.surfaceContainerHighest,
                           child: Icon(
                             Icons.directions_car,
                             size: 16,
-                            color: colorScheme.onPrimaryContainer,
+                            color: isInside
+                                ? colorScheme.onPrimaryContainer
+                                : colorScheme.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -489,13 +1074,42 @@ class _FieldTrackerViewState extends State<FieldTrackerView> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                agent.name,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: colorScheme.onSurface,
-                                ),
+                              Wrap(
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: 6,
+                                runSpacing: 2,
+                                children: [
+                                  Text(
+                                    agent.name,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: colorScheme.onSurface,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isInside
+                                          ? colorScheme.secondaryContainer
+                                          : colorScheme.surfaceContainerHighest,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      isInside ? 'CAMPUS' : 'TRANSIT',
+                                      style: TextStyle(
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.bold,
+                                        color: isInside
+                                            ? colorScheme.onSecondaryContainer
+                                            : colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                               Text(
                                 agent.destinationName,

@@ -270,8 +270,10 @@ class _AttendanceCockpitViewState extends State<AttendanceCockpitView> {
                   Expanded(
                     child: Text(
                       state.isWithinGeofence
-                          ? 'Verified: Within ${AppConstants.hqGeofenceRadiusMeters.toInt()}m ${AppConstants.hqLocationName} Geofence (${state.geofenceDistanceMeters.toStringAsFixed(1)}m from center)'
-                          : 'Warning: Outside ${AppConstants.hqLocationName} Geofence (${state.geofenceDistanceMeters.toStringAsFixed(1)}m)',
+                          ? (state.activeGeofenceZone != null
+                                ? 'Verified: Within ${state.activeGeofenceZone!.name} Polygon Boundary'
+                                : 'Verified: Within ${AppConstants.hqGeofenceRadiusMeters.toInt()}m ${AppConstants.hqLocationName} Geofence (${state.geofenceDistanceMeters.toStringAsFixed(1)}m from center)')
+                          : 'Warning: Outside Campus Geofence (${state.geofenceDistanceMeters.toStringAsFixed(1)}m from boundary)',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,

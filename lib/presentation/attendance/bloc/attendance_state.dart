@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/attendance_record.dart';
+import '../../../domain/entities/geofence_zone.dart';
 import '../../../domain/entities/leave_request.dart';
 
 enum AttendanceStatusState { initial, loading, loaded, error }
@@ -15,6 +16,7 @@ class AttendanceState extends Equatable {
   final double currentLongitude;
   final bool isWithinGeofence;
   final double geofenceDistanceMeters;
+  final GeofenceZone? activeGeofenceZone;
   final String? errorMessage;
   final String? feedbackMessage;
 
@@ -27,6 +29,7 @@ class AttendanceState extends Equatable {
     this.currentLongitude = AppConstants.hqLongitude,
     this.isWithinGeofence = true,
     this.geofenceDistanceMeters = 24.5,
+    this.activeGeofenceZone,
     this.errorMessage,
     this.feedbackMessage,
   });
@@ -49,6 +52,7 @@ class AttendanceState extends Equatable {
     double? currentLongitude,
     bool? isWithinGeofence,
     double? geofenceDistanceMeters,
+    GeofenceZone? activeGeofenceZone,
     String? errorMessage,
     String? feedbackMessage,
   }) {
@@ -64,6 +68,7 @@ class AttendanceState extends Equatable {
       isWithinGeofence: isWithinGeofence ?? this.isWithinGeofence,
       geofenceDistanceMeters:
           geofenceDistanceMeters ?? this.geofenceDistanceMeters,
+      activeGeofenceZone: activeGeofenceZone ?? this.activeGeofenceZone,
       errorMessage: errorMessage,
       feedbackMessage: feedbackMessage,
     );
@@ -79,6 +84,7 @@ class AttendanceState extends Equatable {
     currentLongitude,
     isWithinGeofence,
     geofenceDistanceMeters,
+    activeGeofenceZone,
     errorMessage,
     feedbackMessage,
   ];

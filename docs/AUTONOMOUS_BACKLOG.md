@@ -12,7 +12,7 @@ This backlog defines the 25 granular daily engineering sprints for OctetPulse. E
   - Add tax breakdown charts and payslip deduction itemization in `payslip_breakdown_sheet.dart`.
   - Unit tests for all tax brackets and exemption ceilings.
 
-- [ ] **Sprint 2: Geofence Arbitrary Polygon Boundary Editor**
+- [x] **Sprint 2: Geofence Arbitrary Polygon Boundary Editor**
   - Upgrade circular 150m radius geofencing to arbitrary polygon geofencing using Ray-Casting Point-in-Polygon (PIP) algorithms.
   - Add interactive polygon boundary editor in `FieldTrackerView` allowing corporate admins to draw campus boundaries.
   - Persist polygon vertices in SQLite `geofence_zones` table.

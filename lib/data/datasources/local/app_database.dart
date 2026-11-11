@@ -7,7 +7,7 @@ import '../../../domain/services/tax_engine.dart';
 
 class AppDatabase {
   static const String _dbName = 'octet_pulse_ledger.db';
-  static const int _dbVersion = 2;
+  static const int _dbVersion = 3;
 
   Database? _database;
 
@@ -41,6 +41,21 @@ class AppDatabase {
         await db.execute(
           "ALTER TABLE payroll ADD COLUMN taxJurisdiction TEXT NOT NULL DEFAULT 'FBR_PKR'",
         );
+      } catch (_) {}
+    }
+    if (oldVersion < 3) {
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS geofence_zones (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            description TEXT NOT NULL,
+            verticesJson TEXT NOT NULL,
+            colorHex TEXT NOT NULL,
+            isActive INTEGER NOT NULL,
+            createdAt TEXT NOT NULL
+          )
+        ''');
       } catch (_) {}
     }
   }
@@ -163,10 +178,24 @@ class AppDatabase {
         mosScore REAL NOT NULL
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE geofence_zones (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT NOT NULL,
+        verticesJson TEXT NOT NULL,
+        colorHex TEXT NOT NULL,
+        isActive INTEGER NOT NULL,
+        createdAt TEXT NOT NULL
+      )
+    ''');
   }
 
   Future<void> seedInitialDataIfEmpty() async {
     final db = await database;
+    await _seedGeofenceZonesIfEmpty(db);
+
     final count =
         Sqflite.firstIntValue(
           await db.rawQuery('SELECT COUNT(*) FROM employees'),
@@ -755,5 +784,50 @@ class AppDatabase {
     });
 
     await batch.commit(noResult: true);
+  }
+
+  Future<void> _seedGeofenceZonesIfEmpty(Database db) async {
+    try {
+      final zoneCount =
+          Sqflite.firstIntValue(
+            await db.rawQuery('SELECT COUNT(*) FROM geofence_zones'),
+          ) ??
+          0;
+
+      if (zoneCount == 0) {
+        final zoneBatch = db.batch();
+        zoneBatch.insert('geofence_zones', {
+          'id': 'ZONE-ASTP-HQ',
+          'name': 'Arfa Software Technology Park Main Campus',
+          'description': 'Primary corporate IT campus polygon encompassing ASTP tower, auditorium, and parking plaza.',
+          'verticesJson': jsonEncode([
+            [31.4770, 74.3418],
+            [31.4772, 74.3455],
+            [31.4738, 74.3460],
+            [31.4735, 74.3422],
+            [31.4750, 74.3415],
+          ]),
+          'colorHex': '#1E88E5',
+          'isActive': 1,
+          'createdAt': DateTime.now().toIso8601String(),
+        });
+
+        zoneBatch.insert('geofence_zones', {
+          'id': 'ZONE-GULBERG',
+          'name': 'Gulberg Tech Hub Campus',
+          'description': 'Secondary executive engineering facility along Main Boulevard Gulberg.',
+          'verticesJson': jsonEncode([
+            [31.5200, 74.3520],
+            [31.5215, 74.3580],
+            [31.5160, 74.3590],
+            [31.5145, 74.3530],
+          ]),
+          'colorHex': '#43A047',
+          'isActive': 0,
+          'createdAt': DateTime.now().toIso8601String(),
+        });
+        await zoneBatch.commit(noResult: true);
+      }
+    } catch (_) {}
   }
 }
