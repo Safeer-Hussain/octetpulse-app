@@ -6,7 +6,7 @@ This backlog defines the 25 granular daily engineering sprints for OctetPulse. E
 
 ## Sprint Roadmap
 
-- [ ] **Sprint 1: Multi-Bracket Tax & EOBI Pension Calculation Engine**
+- [x] **Sprint 1: Multi-Bracket Tax & EOBI Pension Calculation Engine**
   - Implement Pakistan Federal Board of Revenue (FBR) 2026-2027 progressive tax slabs alongside USD multi-jurisdictional withholding rules.
   - Implement Employee Old-Age Benefits Institution (EOBI) contribution calculators in `PayrollRepository`.
   - Add tax breakdown charts and payslip deduction itemization in `payslip_breakdown_sheet.dart`.

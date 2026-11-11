@@ -13,6 +13,9 @@ class PayrollRecord extends Equatable {
   final double overtimePayUsd;
   final double incomeTaxUsd;
   final double providentFundUsd;
+  final double eobiContributionUsd;
+  final double effectiveTaxRate; // e.g. 15.2%
+  final String taxJurisdiction; // 'FBR_PKR' or 'FEDERAL_USD'
   final double netPayableUsd;
   final String status; // 'Pending', 'Disbursed'
   final DateTime? disbursedAt;
@@ -31,11 +34,19 @@ class PayrollRecord extends Equatable {
     required this.overtimePayUsd,
     required this.incomeTaxUsd,
     required this.providentFundUsd,
+    this.eobiContributionUsd = 1.33,
+    this.effectiveTaxRate = 15.0,
+    this.taxJurisdiction = 'FBR_PKR',
     required this.netPayableUsd,
     required this.status,
     this.disbursedAt,
     required this.monthYear,
   });
+
+  double get grossEarningsUsd =>
+      baseSalaryUsd + sprintBonusUsd + overtimePayUsd;
+  double get totalDeductionsUsd =>
+      incomeTaxUsd + providentFundUsd + eobiContributionUsd;
 
   PayrollRecord copyWith({
     String? id,
@@ -50,6 +61,9 @@ class PayrollRecord extends Equatable {
     double? overtimePayUsd,
     double? incomeTaxUsd,
     double? providentFundUsd,
+    double? eobiContributionUsd,
+    double? effectiveTaxRate,
+    String? taxJurisdiction,
     double? netPayableUsd,
     String? status,
     DateTime? disbursedAt,
@@ -69,6 +83,9 @@ class PayrollRecord extends Equatable {
       overtimePayUsd: overtimePayUsd ?? this.overtimePayUsd,
       incomeTaxUsd: incomeTaxUsd ?? this.incomeTaxUsd,
       providentFundUsd: providentFundUsd ?? this.providentFundUsd,
+      eobiContributionUsd: eobiContributionUsd ?? this.eobiContributionUsd,
+      effectiveTaxRate: effectiveTaxRate ?? this.effectiveTaxRate,
+      taxJurisdiction: taxJurisdiction ?? this.taxJurisdiction,
       netPayableUsd: netPayableUsd ?? this.netPayableUsd,
       status: status ?? this.status,
       disbursedAt: disbursedAt ?? this.disbursedAt,
@@ -90,6 +107,9 @@ class PayrollRecord extends Equatable {
     overtimePayUsd,
     incomeTaxUsd,
     providentFundUsd,
+    eobiContributionUsd,
+    effectiveTaxRate,
+    taxJurisdiction,
     netPayableUsd,
     status,
     disbursedAt,

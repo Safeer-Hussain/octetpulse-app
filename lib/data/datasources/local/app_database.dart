@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
+import '../../../domain/services/tax_engine.dart';
+
 class AppDatabase {
   static const String _dbName = 'octet_pulse_ledger.db';
-  static const int _dbVersion = 1;
+  static const int _dbVersion = 2;
 
   Database? _database;
 
@@ -19,7 +21,28 @@ class AppDatabase {
     final dbPath = await getDatabasesPath();
     final path = p.join(dbPath, _dbName);
 
-    return await openDatabase(path, version: _dbVersion, onCreate: _onCreate);
+    return await openDatabase(
+      path,
+      version: _dbVersion,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      try {
+        await db.execute(
+          'ALTER TABLE payroll ADD COLUMN eobiContributionUsd REAL NOT NULL DEFAULT 1.33',
+        );
+        await db.execute(
+          'ALTER TABLE payroll ADD COLUMN effectiveTaxRate REAL NOT NULL DEFAULT 15.0',
+        );
+        await db.execute(
+          "ALTER TABLE payroll ADD COLUMN taxJurisdiction TEXT NOT NULL DEFAULT 'FBR_PKR'",
+        );
+      } catch (_) {}
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -81,6 +104,9 @@ class AppDatabase {
         overtimePayUsd REAL NOT NULL,
         incomeTaxUsd REAL NOT NULL,
         providentFundUsd REAL NOT NULL,
+        eobiContributionUsd REAL NOT NULL,
+        effectiveTaxRate REAL NOT NULL,
+        taxJurisdiction TEXT NOT NULL,
         netPayableUsd REAL NOT NULL,
         status TEXT NOT NULL,
         disbursedAt TEXT,
@@ -527,9 +553,7 @@ class AppDatabase {
       final otPay = otHours * hourly * 1.5;
       final sprintBonus = 500.0;
       final gross = base + otPay + sprintBonus;
-      final tax = gross * 0.15; // 15% income tax
-      final pf = base * 0.05; // 5% provident fund
-      final net = gross - tax - pf;
+      final taxResult = TaxEngine.calculateFbrTax(monthlyGrossUsd: gross);
 
       batch.insert('payroll', {
         'id': 'PAY-${emp['id']}',
@@ -542,9 +566,12 @@ class AppDatabase {
         'overtimeHours': otHours,
         'overtimeRateMultiplier': 1.5,
         'overtimePayUsd': otPay,
-        'incomeTaxUsd': tax,
-        'providentFundUsd': pf,
-        'netPayableUsd': net,
+        'incomeTaxUsd': taxResult.monthlyTaxUsd,
+        'providentFundUsd': taxResult.providentFundMonthlyUsd,
+        'eobiContributionUsd': taxResult.eobiEmployeeMonthlyUsd,
+        'effectiveTaxRate': taxResult.effectiveTaxRate,
+        'taxJurisdiction': 'FBR_PKR',
+        'netPayableUsd': taxResult.netMonthlyPayableUsd,
         'status': emp['id'] == 'EMP-101' ? 'Disbursed' : 'Pending',
         'disbursedAt': emp['id'] == 'EMP-101'
             ? now.subtract(const Duration(days: 2)).toIso8601String()

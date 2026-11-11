@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../../domain/entities/payroll_record.dart';
 import '../../domain/repositories/payroll_repository.dart';
+import '../../domain/services/tax_engine.dart';
 import '../datasources/local/app_database.dart';
 
 class PayrollRepositoryImpl implements PayrollRepository {
@@ -36,9 +37,9 @@ class PayrollRepositoryImpl implements PayrollRepository {
       final otPay = otHours * hourly * 1.5;
       final sprintBonus = 500.0;
       final gross = base + otPay + sprintBonus;
-      final tax = gross * 0.15;
-      final pf = base * 0.05;
-      final net = gross - tax - pf;
+
+      // Calculate multi-bracket FBR tax and statutory EOBI pension
+      final taxResult = TaxEngine.calculateFbrTax(monthlyGrossUsd: gross);
 
       batch.insert('payroll', {
         'id': 'PAY-$empId',
@@ -51,9 +52,12 @@ class PayrollRepositoryImpl implements PayrollRepository {
         'overtimeHours': otHours,
         'overtimeRateMultiplier': 1.5,
         'overtimePayUsd': otPay,
-        'incomeTaxUsd': tax,
-        'providentFundUsd': pf,
-        'netPayableUsd': net,
+        'incomeTaxUsd': taxResult.monthlyTaxUsd,
+        'providentFundUsd': taxResult.providentFundMonthlyUsd,
+        'eobiContributionUsd': taxResult.eobiEmployeeMonthlyUsd,
+        'effectiveTaxRate': taxResult.effectiveTaxRate,
+        'taxJurisdiction': 'FBR_PKR',
+        'netPayableUsd': taxResult.netMonthlyPayableUsd,
         'status': 'Pending',
         'disbursedAt': null,
         'monthYear': monthYear,
@@ -85,14 +89,17 @@ class PayrollRepositoryImpl implements PayrollRepository {
   Future<PayrollRecord> recalculatePayrollRecord(PayrollRecord record) async {
     final gross =
         record.baseSalaryUsd + record.overtimePayUsd + record.sprintBonusUsd;
-    final tax = gross * 0.15;
-    final pf = record.baseSalaryUsd * 0.05;
-    final net = gross - tax - pf;
+
+    final taxResult = record.taxJurisdiction == 'FEDERAL_USD'
+        ? TaxEngine.calculateUsdFederalTax(monthlyGrossUsd: gross)
+        : TaxEngine.calculateFbrTax(monthlyGrossUsd: gross);
 
     final updated = record.copyWith(
-      incomeTaxUsd: tax,
-      providentFundUsd: pf,
-      netPayableUsd: net,
+      incomeTaxUsd: taxResult.monthlyTaxUsd,
+      providentFundUsd: taxResult.providentFundMonthlyUsd,
+      eobiContributionUsd: taxResult.eobiEmployeeMonthlyUsd,
+      effectiveTaxRate: taxResult.effectiveTaxRate,
+      netPayableUsd: taxResult.netMonthlyPayableUsd,
     );
 
     final db = await _db.database;
@@ -105,6 +112,9 @@ class PayrollRepositoryImpl implements PayrollRepository {
         'overtimePayUsd': updated.overtimePayUsd,
         'incomeTaxUsd': updated.incomeTaxUsd,
         'providentFundUsd': updated.providentFundUsd,
+        'eobiContributionUsd': updated.eobiContributionUsd,
+        'effectiveTaxRate': updated.effectiveTaxRate,
+        'taxJurisdiction': updated.taxJurisdiction,
         'netPayableUsd': updated.netPayableUsd,
       },
       where: 'id = ?',
@@ -128,6 +138,10 @@ class PayrollRepositoryImpl implements PayrollRepository {
       overtimePayUsd: (map['overtimePayUsd'] as num).toDouble(),
       incomeTaxUsd: (map['incomeTaxUsd'] as num).toDouble(),
       providentFundUsd: (map['providentFundUsd'] as num).toDouble(),
+      eobiContributionUsd:
+          (map['eobiContributionUsd'] as num?)?.toDouble() ?? 1.33,
+      effectiveTaxRate: (map['effectiveTaxRate'] as num?)?.toDouble() ?? 15.0,
+      taxJurisdiction: (map['taxJurisdiction'] as String?) ?? 'FBR_PKR',
       netPayableUsd: (map['netPayableUsd'] as num).toDouble(),
       status: map['status'] as String,
       disbursedAt: map['disbursedAt'] != null
