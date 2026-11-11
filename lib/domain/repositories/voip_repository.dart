@@ -1,5 +1,6 @@
 import '../entities/employee.dart';
 import '../entities/voip_call_log.dart';
+import '../entities/voip_recording.dart';
 import '../entities/voip_telemetry.dart';
 
 abstract class VoipRepository {
@@ -15,4 +16,10 @@ abstract class VoipRepository {
   Future<bool> toggleMute({bool? forceState});
   Future<bool> toggleSpeaker({bool? forceState});
   Future<void> logCompletedCall(VoipCallLog log);
+  Future<List<VoipRecording>> getRecordings();
+  Future<void> saveRecording(VoipRecording recording);
+  Future<void> deleteRecording(String recordingId);
+  Future<Map<String, dynamic>> startRecording({required String callId});
+  Future<Map<String, dynamic>> stopRecording();
+  Future<bool> toggleRecording({bool? forceState});
 }

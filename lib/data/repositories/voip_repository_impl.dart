@@ -1,5 +1,6 @@
 import '../../domain/entities/employee.dart';
 import '../../domain/entities/voip_call_log.dart';
+import '../../domain/entities/voip_recording.dart';
 import '../../domain/entities/voip_telemetry.dart';
 import '../../domain/repositories/voip_repository.dart';
 import '../datasources/local/app_database.dart';
@@ -98,5 +99,43 @@ class VoipRepositoryImpl implements VoipRepository {
       'audioCodec': log.audioCodec,
       'mosScore': log.mosScore,
     });
+  }
+
+  @override
+  Future<List<VoipRecording>> getRecordings() async {
+    final db = await _db.database;
+    final maps = await db.query('voip_recordings', orderBy: 'recordedAt DESC');
+    return maps.map((m) => VoipRecording.fromMap(m)).toList();
+  }
+
+  @override
+  Future<void> saveRecording(VoipRecording recording) async {
+    final db = await _db.database;
+    await db.insert('voip_recordings', recording.toMap());
+  }
+
+  @override
+  Future<void> deleteRecording(String recordingId) async {
+    final db = await _db.database;
+    await db.delete(
+      'voip_recordings',
+      where: 'id = ?',
+      whereArgs: [recordingId],
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>> startRecording({required String callId}) {
+    return _bridge.startRecording(callId: callId);
+  }
+
+  @override
+  Future<Map<String, dynamic>> stopRecording() {
+    return _bridge.stopRecording();
+  }
+
+  @override
+  Future<bool> toggleRecording({bool? forceState}) {
+    return _bridge.toggleRecording(forceState: forceState);
   }
 }

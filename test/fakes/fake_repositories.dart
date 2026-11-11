@@ -8,6 +8,7 @@ import 'package:octet_pulse_app/domain/entities/geofence_zone.dart';
 import 'package:octet_pulse_app/domain/entities/leave_request.dart';
 import 'package:octet_pulse_app/domain/entities/payroll_record.dart';
 import 'package:octet_pulse_app/domain/entities/voip_call_log.dart';
+import 'package:octet_pulse_app/domain/entities/voip_recording.dart';
 import 'package:octet_pulse_app/domain/entities/voip_telemetry.dart';
 import 'package:octet_pulse_app/domain/repositories/attendance_repository.dart';
 import 'package:octet_pulse_app/domain/repositories/dispatch_repository.dart';
@@ -135,6 +136,8 @@ class FakeVoipRepository implements VoipRepository {
       StreamController<VoipTelemetry>.broadcast();
   List<Employee> directory = [];
   List<VoipCallLog> logs = [];
+  List<VoipRecording> recordings = [];
+  bool isRecordingActive = false;
 
   @override
   Future<List<Employee>> getDirectory() async => directory;
@@ -182,6 +185,53 @@ class FakeVoipRepository implements VoipRepository {
 
   @override
   Future<void> logCompletedCall(VoipCallLog log) async => logs.insert(0, log);
+
+  @override
+  Future<List<VoipRecording>> getRecordings() async => recordings;
+
+  @override
+  Future<void> saveRecording(VoipRecording recording) async {
+    final idx = recordings.indexWhere((r) => r.id == recording.id);
+    if (idx >= 0) {
+      recordings[idx] = recording;
+    } else {
+      recordings.insert(0, recording);
+    }
+  }
+
+  @override
+  Future<void> deleteRecording(String recordingId) async {
+    recordings.removeWhere((r) => r.id == recordingId);
+  }
+
+  @override
+  Future<Map<String, dynamic>> startRecording({required String callId}) async {
+    isRecordingActive = true;
+    return {
+      'status': 'recording_active',
+      'callId': callId,
+      'cipher': 'AES-256-GCM',
+      'isRecording': true,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>> stopRecording() async {
+    isRecordingActive = false;
+    return {
+      'status': 'recording_stopped',
+      'isRecording': false,
+      'cipher': 'AES-256-GCM',
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    };
+  }
+
+  @override
+  Future<bool> toggleRecording({bool? forceState}) async {
+    isRecordingActive = forceState ?? !isRecordingActive;
+    return isRecordingActive;
+  }
 }
 
 class FakeDispatchRepository implements DispatchRepository {

@@ -12,6 +12,7 @@ class VoipTelemetry extends Equatable {
   final String audioCodec;
   final bool isMuted;
   final bool isSpeakerOn;
+  final bool isRecording;
   final List<double> waveforms;
   final int timestamp;
 
@@ -27,6 +28,7 @@ class VoipTelemetry extends Equatable {
     this.audioCodec = 'OPUS-HD',
     this.isMuted = false,
     this.isSpeakerOn = false,
+    this.isRecording = false,
     this.waveforms = const [],
     this.timestamp = 0,
   });
@@ -49,6 +51,7 @@ class VoipTelemetry extends Equatable {
       audioCodec: map['audioCodec'] as String? ?? 'OPUS-HD',
       isMuted: map['isMuted'] as bool? ?? false,
       isSpeakerOn: map['isSpeakerOn'] as bool? ?? false,
+      isRecording: map['isRecording'] as bool? ?? false,
       waveforms: waveformsList,
       timestamp:
           map['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch,
@@ -67,6 +70,7 @@ class VoipTelemetry extends Equatable {
     String? audioCodec,
     bool? isMuted,
     bool? isSpeakerOn,
+    bool? isRecording,
     List<double>? waveforms,
     int? timestamp,
   }) {
@@ -82,6 +86,7 @@ class VoipTelemetry extends Equatable {
       audioCodec: audioCodec ?? this.audioCodec,
       isMuted: isMuted ?? this.isMuted,
       isSpeakerOn: isSpeakerOn ?? this.isSpeakerOn,
+      isRecording: isRecording ?? this.isRecording,
       waveforms: waveforms ?? this.waveforms,
       timestamp: timestamp ?? this.timestamp,
     );
@@ -100,6 +105,7 @@ class VoipTelemetry extends Equatable {
     audioCodec,
     isMuted,
     isSpeakerOn,
+    isRecording,
     waveforms,
     timestamp,
   ];

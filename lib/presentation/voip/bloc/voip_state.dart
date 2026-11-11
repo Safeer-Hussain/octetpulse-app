@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../domain/entities/employee.dart';
 import '../../../domain/entities/voip_call_log.dart';
+import '../../../domain/entities/voip_recording.dart';
 import '../../../domain/entities/voip_telemetry.dart';
 
 enum VoipCallStatus { idle, calling, active, ended, error }
@@ -20,9 +21,14 @@ class VoipState extends Equatable {
   final bool isMuted;
   final bool isSpeakerOn;
   final bool isOnHold;
+  final bool isRecording;
   final String dtmfBuffer;
-  final int activeTab; // 0 = Directory & Channels, 1 = Call Cockpit & Keypad
+  final int activeTab; // 0 = Directory & Channels, 1 = Call Cockpit & Keypad, 2 = Vault Recordings
   final String searchQuery;
+  final List<VoipRecording> recordings;
+  final VoipRecording? selectedRecording;
+  final double playbackProgress; // 0.0 to 1.0
+  final bool isPlayingRecording;
   final String? feedbackMessage;
   final String? errorMessage;
 
@@ -40,9 +46,14 @@ class VoipState extends Equatable {
     this.isMuted = false,
     this.isSpeakerOn = false,
     this.isOnHold = false,
+    this.isRecording = false,
     this.dtmfBuffer = '',
     this.activeTab = 0,
     this.searchQuery = '',
+    this.recordings = const [],
+    this.selectedRecording,
+    this.playbackProgress = 0.0,
+    this.isPlayingRecording = false,
     this.feedbackMessage,
     this.errorMessage,
   });
@@ -62,9 +73,15 @@ class VoipState extends Equatable {
     bool? isMuted,
     bool? isSpeakerOn,
     bool? isOnHold,
+    bool? isRecording,
     String? dtmfBuffer,
     int? activeTab,
     String? searchQuery,
+    List<VoipRecording>? recordings,
+    VoipRecording? selectedRecording,
+    bool clearSelectedRecording = false,
+    double? playbackProgress,
+    bool? isPlayingRecording,
     String? feedbackMessage,
     String? errorMessage,
   }) {
@@ -90,9 +107,16 @@ class VoipState extends Equatable {
       isMuted: isMuted ?? this.isMuted,
       isSpeakerOn: isSpeakerOn ?? this.isSpeakerOn,
       isOnHold: isOnHold ?? this.isOnHold,
+      isRecording: isRecording ?? this.isRecording,
       dtmfBuffer: dtmfBuffer ?? this.dtmfBuffer,
       activeTab: activeTab ?? this.activeTab,
       searchQuery: searchQuery ?? this.searchQuery,
+      recordings: recordings ?? this.recordings,
+      selectedRecording: clearSelectedRecording
+          ? null
+          : (selectedRecording ?? this.selectedRecording),
+      playbackProgress: playbackProgress ?? this.playbackProgress,
+      isPlayingRecording: isPlayingRecording ?? this.isPlayingRecording,
       feedbackMessage: feedbackMessage,
       errorMessage: errorMessage,
     );
@@ -113,9 +137,14 @@ class VoipState extends Equatable {
     isMuted,
     isSpeakerOn,
     isOnHold,
+    isRecording,
     dtmfBuffer,
     activeTab,
     searchQuery,
+    recordings,
+    selectedRecording,
+    playbackProgress,
+    isPlayingRecording,
     feedbackMessage,
     errorMessage,
   ];

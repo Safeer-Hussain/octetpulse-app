@@ -4,10 +4,11 @@ import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
 import '../../../domain/services/tax_engine.dart';
+import '../../../domain/services/transcript_simulator.dart';
 
 class AppDatabase {
   static const String _dbName = 'octet_pulse_ledger.db';
-  static const int _dbVersion = 3;
+  static const int _dbVersion = 4;
 
   Database? _database;
 
@@ -54,6 +55,27 @@ class AppDatabase {
             colorHex TEXT NOT NULL,
             isActive INTEGER NOT NULL,
             createdAt TEXT NOT NULL
+          )
+        ''');
+      } catch (_) {}
+    }
+    if (oldVersion < 4) {
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS voip_recordings (
+            id TEXT PRIMARY KEY,
+            callId TEXT NOT NULL,
+            calleeId TEXT NOT NULL,
+            calleeName TEXT NOT NULL,
+            calleeRole TEXT NOT NULL,
+            recordedAt TEXT NOT NULL,
+            durationSeconds INTEGER NOT NULL,
+            fileSizeBytes INTEGER NOT NULL,
+            filePath TEXT NOT NULL,
+            cipher TEXT NOT NULL,
+            checksumSha256 TEXT NOT NULL,
+            waveformsJson TEXT NOT NULL,
+            transcriptJson TEXT NOT NULL
           )
         ''');
       } catch (_) {}
@@ -190,11 +212,30 @@ class AppDatabase {
         createdAt TEXT NOT NULL
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE voip_recordings (
+        id TEXT PRIMARY KEY,
+        callId TEXT NOT NULL,
+        calleeId TEXT NOT NULL,
+        calleeName TEXT NOT NULL,
+        calleeRole TEXT NOT NULL,
+        recordedAt TEXT NOT NULL,
+        durationSeconds INTEGER NOT NULL,
+        fileSizeBytes INTEGER NOT NULL,
+        filePath TEXT NOT NULL,
+        cipher TEXT NOT NULL,
+        checksumSha256 TEXT NOT NULL,
+        waveformsJson TEXT NOT NULL,
+        transcriptJson TEXT NOT NULL
+      )
+    ''');
   }
 
   Future<void> seedInitialDataIfEmpty() async {
     final db = await database;
     await _seedGeofenceZonesIfEmpty(db);
+    await _seedVoipRecordingsIfEmpty(db);
 
     final count =
         Sqflite.firstIntValue(
@@ -827,6 +868,45 @@ class AppDatabase {
           'createdAt': DateTime.now().toIso8601String(),
         });
         await zoneBatch.commit(noResult: true);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _seedVoipRecordingsIfEmpty(Database db) async {
+    try {
+      final count =
+          Sqflite.firstIntValue(
+            await db.rawQuery('SELECT COUNT(*) FROM voip_recordings'),
+          ) ??
+          0;
+
+      if (count == 0) {
+        final rec1 = TranscriptSimulator.simulateRecording(
+          recordingId: 'REC-74A82F',
+          callId: 'call_102_001',
+          calleeId: 'EMP-102',
+          calleeName: 'Zainab Tariq',
+          calleeRole: 'Lead Flutter Engineer',
+          durationSeconds: 48,
+          recordedAt: DateTime.now().subtract(const Duration(hours: 3)),
+        );
+
+        final rec2 = TranscriptSimulator.simulateRecording(
+          recordingId: 'REC-91E33B',
+          callId: 'call_105_002',
+          calleeId: 'EMP-105',
+          calleeName: 'Tariq Mahmood',
+          calleeRole: 'Field Operations Specialist',
+          durationSeconds: 32,
+          recordedAt: DateTime.now().subtract(
+            const Duration(days: 1, hours: 2),
+          ),
+        );
+
+        final batch = db.batch();
+        batch.insert('voip_recordings', rec1.toMap());
+        batch.insert('voip_recordings', rec2.toMap());
+        await batch.commit(noResult: true);
       }
     } catch (_) {}
   }

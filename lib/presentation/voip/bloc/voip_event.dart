@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../domain/entities/voip_recording.dart';
 import '../../../domain/entities/voip_telemetry.dart';
 
 abstract class VoipEvent extends Equatable {
@@ -78,4 +79,60 @@ class SwitchVoipTabEvent extends VoipEvent {
 
   @override
   List<Object?> get props => [tabIndex];
+}
+
+class LoadVoipRecordingsEvent extends VoipEvent {
+  const LoadVoipRecordingsEvent();
+}
+
+class StartVoipRecordingEvent extends VoipEvent {
+  const StartVoipRecordingEvent();
+}
+
+class StopVoipRecordingEvent extends VoipEvent {
+  const StopVoipRecordingEvent();
+}
+
+class ToggleVoipRecordingEvent extends VoipEvent {
+  const ToggleVoipRecordingEvent();
+}
+
+class DeleteVoipRecordingEvent extends VoipEvent {
+  final String recordingId;
+
+  const DeleteVoipRecordingEvent(this.recordingId);
+
+  @override
+  List<Object?> get props => [recordingId];
+}
+
+class SelectRecordingForPlaybackEvent extends VoipEvent {
+  final VoipRecording? recording;
+
+  const SelectRecordingForPlaybackEvent(this.recording);
+
+  @override
+  List<Object?> get props => [recording];
+}
+
+class SeekRecordingPlaybackEvent extends VoipEvent {
+  final double progress;
+
+  const SeekRecordingPlaybackEvent(this.progress);
+
+  @override
+  List<Object?> get props => [progress];
+}
+
+class ToggleRecordingPlaybackPlayPauseEvent extends VoipEvent {
+  const ToggleRecordingPlaybackPlayPauseEvent();
+}
+
+class RecordingPlaybackTickEvent extends VoipEvent {
+  final double progress;
+
+  const RecordingPlaybackTickEvent(this.progress);
+
+  @override
+  List<Object?> get props => [progress];
 }

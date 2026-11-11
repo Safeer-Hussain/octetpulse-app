@@ -9,6 +9,7 @@ import UIKit
   private var isCallActive = false
   private var isMuted = false
   private var isSpeakerOn = false
+  private var isRecording = false
   private var currentCodec = "OPUS-HD"
   private var activeCallId = ""
   private var callDurationSeconds = 0
@@ -56,6 +57,7 @@ import UIKit
         ])
       case "endCall":
         self.isCallActive = false
+        self.isRecording = false
         let duration = self.callDurationSeconds
         self.callDurationSeconds = 0
         let oldId = self.activeCallId
@@ -86,6 +88,36 @@ import UIKit
         let args = call.arguments as? [String: Any]
         self.currentCodec = args?["codec"] as? String ?? "OPUS-HD"
         result(["codec": self.currentCodec])
+      case "startRecording":
+        self.isRecording = true
+        let args = call.arguments as? [String: Any]
+        let callId = args?["callId"] as? String ?? self.activeCallId
+        result([
+          "status": "recording_active",
+          "callId": callId,
+          "cipher": "AES-256-GCM",
+          "isRecording": true,
+          "timestamp": Int64(Date().timeIntervalSince1970 * 1000)
+        ])
+      case "stopRecording":
+        self.isRecording = false
+        result([
+          "status": "recording_stopped",
+          "isRecording": false,
+          "cipher": "AES-256-GCM",
+          "timestamp": Int64(Date().timeIntervalSince1970 * 1000)
+        ])
+      case "toggleRecording":
+        let args = call.arguments as? [String: Any]
+        if let force = args?["isRecording"] as? Bool {
+          self.isRecording = force
+        } else {
+          self.isRecording.toggle()
+        }
+        result([
+          "isRecording": self.isRecording,
+          "cipher": "AES-256-GCM"
+        ])
       default:
         result(FlutterMethodNotImplemented)
       }
@@ -124,6 +156,7 @@ import UIKit
         "audioCodec": self.currentCodec,
         "isMuted": self.isMuted,
         "isSpeakerOn": self.isSpeakerOn,
+        "isRecording": self.isRecording,
         "waveforms": waveforms,
         "timestamp": Int64(Date().timeIntervalSince1970 * 1000)
       ]

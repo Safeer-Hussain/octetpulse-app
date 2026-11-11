@@ -16,6 +16,7 @@ class MainActivity : FlutterActivity() {
     private var isCallActive = false
     private var isMuted = false
     private var isSpeakerOn = false
+    private var isRecording = false
     private var currentCodec = "OPUS-HD"
     private var activeCallId: String? = null
     private var callDurationSeconds = 0
@@ -51,6 +52,7 @@ class MainActivity : FlutterActivity() {
             telemetryData["audioCodec"] = currentCodec
             telemetryData["isMuted"] = isMuted
             telemetryData["isSpeakerOn"] = isSpeakerOn
+            telemetryData["isRecording"] = isRecording
             telemetryData["waveforms"] = waveforms
             telemetryData["timestamp"] = System.currentTimeMillis()
 
@@ -89,6 +91,7 @@ class MainActivity : FlutterActivity() {
                     }
                     "endCall" -> {
                         isCallActive = false
+                        isRecording = false
                         val duration = callDurationSeconds
                         callDurationSeconds = 0
                         val oldCallId = activeCallId ?: ""
@@ -120,6 +123,34 @@ class MainActivity : FlutterActivity() {
                         currentCodec = codec
                         val response = HashMap<String, Any>()
                         response["codec"] = currentCodec
+                        result.success(response)
+                    }
+                    "startRecording" -> {
+                        isRecording = true
+                        val callId = call.argument<String>("callId") ?: (activeCallId ?: "call_recorded")
+                        val response = HashMap<String, Any>()
+                        response["status"] = "recording_active"
+                        response["callId"] = callId
+                        response["cipher"] = "AES-256-GCM"
+                        response["isRecording"] = true
+                        response["timestamp"] = System.currentTimeMillis()
+                        result.success(response)
+                    }
+                    "stopRecording" -> {
+                        isRecording = false
+                        val response = HashMap<String, Any>()
+                        response["status"] = "recording_stopped"
+                        response["isRecording"] = false
+                        response["cipher"] = "AES-256-GCM"
+                        response["timestamp"] = System.currentTimeMillis()
+                        result.success(response)
+                    }
+                    "toggleRecording" -> {
+                        val forceState = call.argument<Boolean>("isRecording")
+                        isRecording = forceState ?: !isRecording
+                        val response = HashMap<String, Any>()
+                        response["isRecording"] = isRecording
+                        response["cipher"] = "AES-256-GCM"
                         result.success(response)
                     }
                     else -> result.notImplemented()

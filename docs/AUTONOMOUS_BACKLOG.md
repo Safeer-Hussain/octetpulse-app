@@ -18,7 +18,7 @@ This backlog defines the 25 granular daily engineering sprints for OctetPulse. E
   - Persist polygon vertices in SQLite `geofence_zones` table.
   - Unit and widget tests for vertex point containment.
 
-- [ ] **Sprint 3: Native VoIP Audio Call Recording & Encrypted Transcript Simulator**
+- [x] **Sprint 3: Native VoIP Audio Call Recording & Encrypted Transcript Simulator**
   - Extend Kotlin and Swift VoIP bridges with audio recording buffer toggle.
   - Store encrypted call audio manifests in SQLite `voip_recordings` table with AES-256 GCM metadata.
   - Add playback scrubber and waveform playback HUD in `VoipHubView`.
